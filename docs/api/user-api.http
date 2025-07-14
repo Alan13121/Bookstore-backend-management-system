@@ -1,12 +1,14 @@
 ### 🔷 查詢所有用戶
 GET http://localhost:8080/api/users
 Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfYWRtaW4iLCJST0xFX3N0YWZmIl0sImlhdCI6MTc1MjQ3NTU4MywiZXhwIjoxNzUyNTYxOTgzfQ.qF63-FOiZ1jDLbXP2_8zBneIuYkReYC9HMK8W_EAjfthVzVrhKDbcUcSm6chFbagPoQZIOzk75VGXINZ5rwlEg
 
 ###
 
 ### 🔷 查詢單個用戶
 GET http://localhost:8080/api/users/1
 Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfYWRtaW4iLCJST0xFX3N0YWZmIl0sImlhdCI6MTc1MjQ3NTU4MywiZXhwIjoxNzUyNTYxOTgzfQ.qF63-FOiZ1jDLbXP2_8zBneIuYkReYC9HMK8W_EAjfthVzVrhKDbcUcSm6chFbagPoQZIOzk75VGXINZ5rwlEg
 
 ###
 
@@ -16,27 +18,28 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "username": "jerry",
+  "username": "clan",
   "password": "123456",
-  "fullName": "Jerry Chen",
+  "fullName": "clan ww",
   "phone": "0912345678",
-  "email": "jerry@example.com",
-  "enabled": true,
-  "roleIds": [1, 2]
+  "email": "clan@example.com",
+  "roleIds": [1]
 }
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfYWRtaW4iLCJST0xFX3N0YWZmIl0sImlhdCI6MTc1MjQ3NTU4MywiZXhwIjoxNzUyNTYxOTgzfQ.qF63-FOiZ1jDLbXP2_8zBneIuYkReYC9HMK8W_EAjfthVzVrhKDbcUcSm6chFbagPoQZIOzk75VGXINZ5rwlEg
+
+
 
 ###
 
 ### 🔷 更新用戶
-PUT http://localhost:8080/api/users/1
+PUT http://localhost:8080/api/users/11
 Content-Type: application/json
 Accept: application/json
 
 {
-  "fullName": "Jerry Chen Jr.",
+  "fullName": "alan ou",
   "phone": "0987654321",
-  "email": "jerryjr@example.com",
-  "enabled": false,
+  "email": "alan@example.com",
   "roleIds": [2]
 }
 
@@ -47,3 +50,28 @@ DELETE http://localhost:8080/api/users/1
 Accept: application/json
 
 ###
+
+### 🔷 取得token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "6969"
+}
+
+
+###
+
+###測試用token
+
+//staff
+//eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzdGFmZiIsInJvbGVzIjpbIlJPTEVfU1RBRkYiXSwiaWF0IjoxNzUyNDgxNDkwLCJleHAiOjE3NTI1Njc4OTB9.zQVdOGj-0xl-C--HsE1tz9KYGKgjnHYwlkbw7J8BsBQf2wNnoR-AuB71LYZ2Xn-krNf_rj6MZL_nYXVPl9I8LQ
+
+//admin
+//eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfQURNSU4iLCJST0xFX1NUQUZGIl0sImlhdCI6MTc1MjQ4MTQzMiwiZXhwIjoxNzUyNTY3ODMyfQ.WuCnE97qvmiMQs1E7iUFsoD1ZwDDsZIvJn8XfG6D5kOtOpd7lBs249R_WFoxGDM4aTCm1Yg-36unRF8ED9Fzng
+
+###
+
+
+

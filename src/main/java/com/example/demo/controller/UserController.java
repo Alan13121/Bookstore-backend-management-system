@@ -7,16 +7,18 @@ import com.example.demo.service.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "用戶管理", description = "處理用戶的增刪查改")
@@ -27,6 +29,10 @@ public class UserController {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     @Operation(summary = "查詢所有用戶")
     @GetMapping
@@ -51,7 +57,11 @@ public class UserController {
             @RequestBody CreateUserRequest request) {
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
+
+        //user.setPassword(request.getPassword());  加密
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        user.setPassword(encodedPassword);
+
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.setEmail(request.getEmail());
