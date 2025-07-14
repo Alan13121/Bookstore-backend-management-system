@@ -1,0 +1,49 @@
+### 🔷 查詢所有用戶
+GET http://localhost:8080/api/users
+Accept: application/json
+
+###
+
+### 🔷 查詢單個用戶
+GET http://localhost:8080/api/users/1
+Accept: application/json
+
+###
+
+### 🔷 新增用戶
+POST http://localhost:8080/api/users
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "jerry",
+  "password": "123456",
+  "fullName": "Jerry Chen",
+  "phone": "0912345678",
+  "email": "jerry@example.com",
+  "enabled": true,
+  "roleIds": [1, 2]
+}
+
+###
+
+### 🔷 更新用戶
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "fullName": "Jerry Chen Jr.",
+  "phone": "0987654321",
+  "email": "jerryjr@example.com",
+  "enabled": false,
+  "roleIds": [2]
+}
+
+###
+
+### 🔷 刪除用戶
+DELETE http://localhost:8080/api/users/1
+Accept: application/json
+
+###

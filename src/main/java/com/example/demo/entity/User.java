@@ -1,11 +1,14 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+
+import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -34,9 +37,21 @@ public class User {
     @Column(name = "enabled")
     private Boolean enabled;
 
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private Set<UserRole> userRoles;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<Role> roles = new HashSet<>();
+
+
+    @Override
+    public String toString() {
+        return "User{id=" + id + ", username='" + username + "', email='" + email + "', enabled=" + enabled + "}";
+    }
 
 
 }
