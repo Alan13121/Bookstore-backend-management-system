@@ -10,12 +10,12 @@
 
 ##  功能
 
-✅ 使用 Spring Boot 框架構建
-✅ 集成 Spring Security 和 JWT
-✅ 使用 Spring Data JPA 操作 MariaDB
-✅ 自動建表、初始化資料
-✅ 以 Docker / Docker Compose 容器化部署
-✅ RESTful API
+1. 使用 Spring Boot 框架構建
+2.  集成 Spring Security 和 JWT
+3.  使用 Spring Data JPA 操作 MariaDB
+4.  自動建表、初始化資料
+5.  以 Docker / Docker Compose 容器化部署
+6.  RESTful API
 
 ---
 
