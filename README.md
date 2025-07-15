@@ -74,6 +74,12 @@ spring.jpa.show-sql=true
 #### `src/main/resources/data.sql`
 
  初始化測試資料
+ 密碼用Bcrypt Hash加密
+ 預設帳號:
+ 1.username:admin 
+   password:6969
+ 2.username:user 
+   password:6969
 
 ```sql
 -- 初始化 users 表
@@ -86,7 +92,7 @@ VALUES
 INSERT INTO roles (id, name)
 VALUES
 (1, 'ADMIN'),
-(2, 'USER');
+(2, 'STAFF');
 
 -- 關聯 users 和 roles（假設是 user_roles 表）
 INSERT INTO user_roles (user_id, role_id)
