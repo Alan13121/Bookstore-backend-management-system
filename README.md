@@ -1,14 +1,14 @@
 
 ---
 
-# 📚 Bookshop Backend
+#  Bookshop Backend
 
 一個基於 **Spring Boot + MariaDB + Docker** 的圖書商店後端服務，支持用戶認證、圖書管理、角色權限管理等功能。
 
 ---
 
 
-## 🌟 功能特性
+##  功能
 
 ✅ 使用 Spring Boot 框架構建
 ✅ 集成 Spring Security 和 JWT
@@ -19,7 +19,7 @@
 
 ---
 
-## 🚀 環境需求
+##  環境
 
 * JDK 17+
 * Maven 3.8+
@@ -28,7 +28,7 @@
 
 ---
 
-## 🔧 建置與啟動
+## 建置與啟動
 
 ### 1️ 下載專案
 
