@@ -30,7 +30,7 @@
 
 ## 🔧 建置與啟動
 
-### 1️⃣ 下載專案
+### 1️ 下載專案
 
 ```bash
 git clone https://github.com/your-github-username/bookshop.git
@@ -39,7 +39,7 @@ cd bookshop
 
 ---
 
-### 2️⃣ 編譯打包
+### 2️ 編譯打包
 
 ```bash
 ./mvnw clean package -DskipTests
@@ -59,7 +59,7 @@ target/demo-0.0.1-SNAPSHOT.jar
 
 ---
 
-### 3️⃣ 確認配置
+### 3️ 確認配置
 
 #### `src/main/resources/application.properties`
 
@@ -73,20 +73,34 @@ spring.jpa.show-sql=true
 
 #### `src/main/resources/data.sql`
 
-> 初始化測試資料
+ 初始化測試資料
 
 ```sql
-INSERT INTO users (id, username, password, full_name, email, enabled, created_at)
+-- 初始化 users 表
+INSERT INTO users (username, password, full_name, email, enabled)
 VALUES 
-(1, 'admin', '{bcrypt}$2a$10$abcdefg1234567...', 'Administrator', 'admin@example.com', 1, NOW());
+('admin', '$2a$10$bCMAT38mF7e1VWwngii7JOHXjDM2WTk76kHZqhusnne/s7/QzFj2K', '6969', 'admin@example.com', 1),
+('user', '$2a$10$bCMAT38mF7e1VWwngii7JOHXjDM2WTk76kHZqhusnne/s7/QzFj2K', '6969', 'user@example.com', 1);
 
+-- 初始化 roles 表
 INSERT INTO roles (id, name)
 VALUES
-(1, 'ROLE_ADMIN');
+(1, 'ADMIN'),
+(2, 'USER');
 
+-- 關聯 users 和 roles（假設是 user_roles 表）
 INSERT INTO user_roles (user_id, role_id)
 VALUES
-(1, 1);
+(1, 1),
+(1, 2),
+(2, 2);
+
+-- 初始化 books 表
+INSERT INTO books (id, title, author, price, stock)
+VALUES
+(1, 'Spring Boot in Action', 'Craig Walls', 39.99, 100),
+(2, 'Hibernate Tips', 'Thorben Janssen', 29.99, 50);
+
 ```
 
 #### `docker-compose.yml`
@@ -119,7 +133,7 @@ volumes:
 
 ---
 
-### 4️⃣ 建立 Docker Image 並啟動
+### 4️ 建立 Docker Image 並啟動
 
 ```bash
 docker-compose up --build -d
@@ -127,7 +141,7 @@ docker-compose up --build -d
 
 ---
 
-### 5️⃣ 確認服務狀態
+### 5️ 確認服務狀態
 
 查看容器狀態：
 
@@ -151,7 +165,7 @@ Started DemoApplication in xx seconds
 
 ---
 
-## 🧪 測試服務
+## 測試服務
 
 打開瀏覽器訪問：
 
@@ -167,7 +181,7 @@ curl http://localhost:8080/api/your-endpoint
 
 ---
 
-## 🗑️ 停止與清理
+## 停止
 
 停止容器：
 
