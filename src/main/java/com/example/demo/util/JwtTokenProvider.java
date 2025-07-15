@@ -50,7 +50,7 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()  // ✅ 0.12.x 正確寫法
+            Jwts.parser()  
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token);

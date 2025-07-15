@@ -8,6 +8,10 @@ import java.util.Set;
 @Data
 @Schema(description = "用戶更新請求資料")
 public class UpdateUserRequest {
+
+    @Schema(description = "暱稱", example = "Jerry")
+    private String username;
+
     @Schema(description = "全名", example = "Jerry Chen")
     private String fullName;
 

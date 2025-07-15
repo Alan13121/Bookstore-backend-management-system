@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>📖 書籍管理</title></head>
+<body>
+<h1>📖 書籍管理</h1>
+<a href="/index.html">返回首頁</a>
+<h3>🔍 查詢全部書籍</h3>
+<button onclick="getBooks()">查詢所有書籍</button>
+<h3>🔍 查詢單本書籍</h3>
+<input type="number" id="book-id-get" placeholder="書籍ID">
+<button onclick="getBook()">查詢書籍</button>
+<h3>➕ 新增書籍</h3>
+<input type="text" id="book-title" placeholder="書名">
+<input type="text" id="book-author" placeholder="作者">
+<input type="text" id="book-desc" placeholder="簡述">
+<input type="number" id="book-list-price" placeholder="定價">
+<input type="number" id="book-sale-price" placeholder="售價">
+<button onclick="createBook()">新增書籍</button>
+<h3>✏️ 更新書籍</h3>
+<input type="number" id="book-id-update" placeholder="書籍ID">
+<input type="text" id="book-title-update" placeholder="書名">
+<input type="text" id="book-author-update" placeholder="作者">
+<input type="text" id="book-desc-update" placeholder="簡述">
+<input type="number" id="book-list-price-update" placeholder="定價">
+<input type="number" id="book-sale-price-update" placeholder="售價">
+<button onclick="updateBook()">更新書籍</button>
+<h3>🗑️ 刪除書籍</h3>
+<input type="number" id="book-id-delete" placeholder="書籍ID">
+<button onclick="deleteBook()">刪除書籍</button>
+<pre id="output"></pre>
+<script src="/js/common.js"></script>
+<script src="/js/books.js"></script>
+</body></html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>📚 Bookshop 管理系統 - 首頁</title>
+</head>
+<body>
+
+<h1>📚 Bookshop 管理系統</h1>
+
+<ul id="menu">
+  <!-- 這裡會由 JS 動態生成 -->
+</ul>
+
+<script>
+const token = localStorage.getItem("token");
+const menu = document.getElementById("menu");
+
+function decodeToken(token) {
+  if (!token) return null;
+  const payload = token.split('.')[1];
+  const decoded = atob(payload);
+  return JSON.parse(decoded);
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  alert("已登出");
+  window.location.reload();
+}
+
+if (!token) {
+  // 未登入
+  menu.innerHTML = `
+    <li><a href="/login.html">🔐 登入</a></li>
+    <li><a href="/register.html">👥 註冊</a></li>
+  `;
+} else {
+  const user = decodeToken(token);
+  console.log("當前登入的 Token:", token);
+  console.log("解碼後的 Payload:", user);
+
+  menu.innerHTML = `
+    <li><a href="#" onclick="logout()">🚪 登出</a></li>
+    <li><a href="/books.html">📖 書籍管理</a></li>
+  `;
+
+  if (user.roles && user.roles.includes("ROLE_ADMIN")) {
+    menu.innerHTML += `
+      <li><a href="/users.html">👤 用戶管理</a></li>
+    `;
+  }
+}
+</script>
+
+</body>
+</html>

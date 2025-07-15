@@ -37,19 +37,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                                .requestMatchers(
-                                        "/api/auth/**",
-                                        "/index/**",
-                                        "/swagger-ui/**",
-                                        "/v3/api-docs/**",
-                                        "/swagger-resources/**",
-                                        "/webjars/**"
-                                ).permitAll()
-                                .requestMatchers(
-                                        "/api/admin/**",
-                                        "/api/users/**"
-                                ).hasRole("ADMIN")
-                                .requestMatchers("/api/staff/**").hasAnyRole("ADMIN", "STAFF")
+                                // 路徑開放
+                                .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                                
+                                // 靜態資源開放
+                                .requestMatchers("/", "/static/**", "/js/**", "/css/**", "/*.html").permitAll()
+
+                                // 需要 ADMIN 或 STAFF
+                                .requestMatchers( "/api/books/**").hasAnyRole("ADMIN", "STAFF")
+
+                                // only ADMIN
+                                .requestMatchers( "/api/users/**").hasRole("ADMIN")
+
+                                // 其他全部需要登入
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

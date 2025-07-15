@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>註冊</title></head>
+<body>
+<h2>👥 註冊</h2>
+<input type="text" id="reg-username" placeholder="Username">
+<input type="password" id="reg-password" placeholder="Password">
+<input type="text" id="reg-fullname" placeholder="Full Name">
+<input type="text" id="reg-email" placeholder="Email">
+<input type="text" id="reg-phone" placeholder="Phone">
+<button onclick="register()">註冊</button>
+<pre id="output"></pre>
+
+<script>
+async function register() {
+  const user = {
+    username: document.getElementById('reg-username').value,
+    password: document.getElementById('reg-password').value,
+    fullName: document.getElementById('reg-fullname').value,
+    email: document.getElementById('reg-email').value,
+    phone: document.getElementById('reg-phone').value
+  };
+
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(user)
+  });
+  const text = await res.text();
+  document.getElementById('output').textContent = text;
+  alert(text);
+}
+</script>
+</body>
+</html>

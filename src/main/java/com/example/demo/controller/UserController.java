@@ -79,17 +79,28 @@ public class UserController {
         return ResponseEntity.ok(toUserResponse(saved));
     }
 
-    @Operation(summary = "更新用戶")
+    @Operation(summary = "更新用戶資料")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(
-            @Parameter(description = "用戶ID") @PathVariable Integer id,
+            @PathVariable Integer id,
             @RequestBody UpdateUserRequest request) {
         return userRepository.findById(id)
                 .map(user -> {
-                    user.setFullName(request.getFullName());
-                    user.setPhone(request.getPhone());
-                    user.setEmail(request.getEmail());
-                    user.setEnabled(request.getEnabled());
+                    if (request.getUsername() != null) {
+                        user.setUsername(request.getUsername());
+                    }
+                    if (request.getFullName() != null) {
+                        user.setFullName(request.getFullName());
+                    }
+                    if (request.getPhone() != null) {
+                        user.setPhone(request.getPhone());
+                    }
+                    if (request.getEmail() != null) {
+                        user.setEmail(request.getEmail());
+                    }
+                    if (request.getEnabled() != null) {
+                        user.setEnabled(request.getEnabled());
+                    }
 
                     if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
                         Set<Role> roles = request.getRoleIds().stream()
@@ -104,6 +115,8 @@ public class UserController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+
 
     @Operation(summary = "刪除用戶")
     @DeleteMapping("/{id}")
