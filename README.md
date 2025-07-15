@@ -74,6 +74,7 @@ spring.jpa.show-sql=true
 #### `src/main/resources/data.sql`
 
  初始化測試資料
+ 
  密碼用Bcrypt Hash加密
  預設帳號:
  1.username:admin 
