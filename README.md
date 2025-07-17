@@ -39,27 +39,7 @@ cd bookshop
 
 ---
 
-### 2️ 編譯打包
-
-```bash
-./mvnw clean package -DskipTests
-```
-
-或（已安裝 Maven）
-
-```bash
-mvn clean package -DskipTests
-```
-
-打包完成後會在 `target/` 下產生：
-
-```
-target/demo-0.0.1-SNAPSHOT.jar
-```
-
----
-
-### 3️ 確認配置
+### 2️ 確認配置
 
 #### `src/main/resources/application.properties`
 
@@ -136,6 +116,27 @@ services:
 volumes:
   mariadb_data:
 ```
+
+---
+
+### 3️ 編譯打包
+
+```bash
+./mvnw clean package -DskipTests
+```
+
+或（已安裝 Maven）
+
+```bash
+mvn clean package -DskipTests
+```
+
+打包完成後會在 `target/` 下產生：
+
+```
+target/demo-0.0.1-SNAPSHOT.jar
+```
+
 
 ---
 
