@@ -82,10 +82,10 @@ VALUES
 (2, 2);
 
 -- 初始化 books 表
-INSERT INTO books ( title, author, list_price, sale_price)
+INSERT INTO books ( title, author, description , list_price, sale_price)
 VALUES
-('Spring Boot in Action', 'Craig Walls', 39.99, 100),
-('Hibernate Tips', 'Thorben Janssen', 29.99, 50);
+('Spring Boot in Action', 'Craig Walls','good book', 39.99, 100),
+('Hibernate Tips', 'Thorben Janssen','good book', 29.99, 50);
 
 ```
 
