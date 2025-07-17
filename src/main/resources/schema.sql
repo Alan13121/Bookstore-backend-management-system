@@ -1,4 +1,8 @@
---books結構
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS books;
+
 CREATE TABLE IF NOT EXISTS `books` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) DEFAULT NULL,
@@ -6,10 +10,10 @@ CREATE TABLE IF NOT EXISTS `books` (
   `description` text DEFAULT NULL,
   `list_price` decimal(38,2) DEFAULT NULL,
   `sale_price` decimal(38,2) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---users結構
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) UNIQUE,
@@ -17,18 +21,17 @@ CREATE TABLE IF NOT EXISTS `users` (
   `full_name` varchar(255) DEFAULT NULL,
   `phone` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
-  `enabled` tinyint(1) DEFAULT 1,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---roles結構
 CREATE TABLE IF NOT EXISTS `roles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) UNIQUE,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---user_roles結構
 CREATE TABLE IF NOT EXISTS `user_roles` (
   `user_id` int(11) NOT NULL,
   `role_id` int(11) NOT NULL,

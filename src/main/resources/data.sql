@@ -10,7 +10,7 @@ VALUES
 (1, 'ADMIN'),
 (2, 'STAFF');
 
--- 關聯 users 和 roles（假設是 user_roles 表）
+-- 關聯 users 和 roles
 INSERT INTO user_roles (user_id, role_id)
 VALUES
 (1, 1),
