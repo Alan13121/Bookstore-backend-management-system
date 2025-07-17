@@ -66,7 +66,7 @@ password:6969
 INSERT INTO users (username, password, full_name, email, enabled)
 VALUES 
 ('admin', '$2a$10$bCMAT38mF7e1VWwngii7JOHXjDM2WTk76kHZqhusnne/s7/QzFj2K', '6969', 'admin@example.com', 1),
-('user', '$2a$10$bCMAT38mF7e1VWwngii7JOHXjDM2WTk76kHZqhusnne/s7/QzFj2K', '6969', 'user@example.com', 1);
+('staff', '$2a$10$bCMAT38mF7e1VWwngii7JOHXjDM2WTk76kHZqhusnne/s7/QzFj2K', '6969', 'user@example.com', 1);
 
 -- 初始化 roles 表
 INSERT INTO roles (id, name)
