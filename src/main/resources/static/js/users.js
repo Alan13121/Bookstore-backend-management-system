@@ -1,51 +1,75 @@
 async function getUsers() {
   const res = await fetch('/api/users', { headers: authHeader() });
   const data = await res.json();
-  setOutput(data);
+  renderUserTable(data);
 }
-async function getUser() {
-  const id = document.getElementById('user-id-get').value;
-  const res = await fetch(`/api/users/${id}`, { headers: authHeader() });
-  if (res.status === 404) return alert('用戶不存在');
-  const data = await res.json();
-  setOutput(data);
-}
-// 新增用戶
-async function createUser() {
-  const roles = document.getElementById('user-role-ids').value
-    .split(',').map(s => parseInt(s.trim()));
-  const user = {
-    username: document.getElementById('user-username').value,
-    password: document.getElementById('user-password').value,
-    fullName: document.getElementById('user-fullname').value,
-    email: document.getElementById('user-email').value,
-    phone: document.getElementById('user-phone').value,
-    enabled: document.getElementById('user-enabled').value === 'true',
-    roleIds: roles
-  };
-  const res = await fetch('/api/users', {
-    method: 'POST', headers: authHeader(), body: JSON.stringify(user)
+
+// 渲染表格
+function renderUserTable(users) {
+  const container = document.getElementById('user-table');
+  if (!users || users.length === 0) {
+    container.innerHTML = '<p>沒有用戶資料</p>';
+    return;
+  }
+
+  let html = `
+    <table border="1">
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Full Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Action</th>
+      </tr>
+  `;
+
+  users.forEach(user => {
+    html += `
+      <tr>
+        <td>${user.id}</td>
+        <td>${user.username}</td>
+        <td>${user.fullName}</td>
+        <td>${user.phone}</td>
+        <td>${user.email}</td>
+        <td>
+          <a href="#" onclick="deleteUser(${user.id})">刪除</a> 
+          <a href="user.html?id=${user.id}">更改</a>
+        </td>
+      </tr>
+    `;
   });
-  const data = await res.json();
-  alert('新增成功');
-  setOutput(data);
-}
-// 更新用戶
-async function updateUser() {
-  const id = document.getElementById('user-id-update').value;
 
-  const roles = document.getElementById('user-role-ids-update').value
-    .split(',')
-    .filter(s => s.trim())
-    .map(s => parseInt(s.trim()));
+  html += '</table>';
+  container.innerHTML = html;
+}
+
+// 刪除用戶
+async function deleteUser(id) {
+  if (!confirm(`確定要刪除用戶 ${id} 嗎?`)) return;
+
+  const res = await fetch(`/api/users/${id}`, {
+    method: 'DELETE', headers: authHeader()
+  });
+
+  if (res.status === 204) {
+    alert('刪除成功');
+    getUsers(); // 重新刷新
+  } else {
+    alert('刪除失敗');
+  }
+}
+
+// 編輯用戶
+async function editUser(id) {
+  const fullName = prompt('輸入新全名：');
+  const email = prompt('輸入新Email：');
+  const phone = prompt('輸入新電話：');
 
   const user = {
-    username: toNull(document.getElementById('user-username-update').value),
-    fullName: toNull(document.getElementById('user-fullname-update').value),
-    email: toNull(document.getElementById('user-email-update').value),
-    phone: toNull(document.getElementById('user-phone-update').value),
-    enabled: toNull(document.getElementById('user-enabled-update').value) === 'true',
-    roleIds: roles.length > 0 ? roles : null
+    fullName: fullName,
+    email: email,
+    phone: phone
   };
 
   const res = await fetch(`/api/users/${id}`, {
@@ -55,31 +79,39 @@ async function updateUser() {
   });
 
   if (res.ok) {
-    const data = await res.json();
     alert('更新成功');
-    setOutput(data);
+    getUsers(); // 重新刷新
   } else {
     const err = await res.text();
     alert(`更新失敗: ${err}`);
   }
 }
 
-// 空字串回傳null
-function toNull(val) {
-  return val.trim() === "" ? null : val.trim();
-}
+//新增用戶
+async function createUser() {
+  const user = {
+    username: document.getElementById('new-username').value,
+    password: document.getElementById('new-password').value,
+    fullName: document.getElementById('new-fullName').value,
+    phone: document.getElementById('new-phone').value,
+    email: document.getElementById('new-email').value,
+    enabled: document.getElementById('new-enabled').value === 'true',
+    roleIds: document.getElementById('new-roles').value
+      .split(',')
+      .map(Number)
+      .filter(Boolean)
+  };
 
-
-// 刪除用戶
-async function deleteUser() {
-  const id = document.getElementById('user-id-delete').value;
-  const res = await fetch(`/api/users/${id}`, {
-    method: 'DELETE', headers: authHeader()
+  const res = await fetch('/api/users', {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(user)
   });
-  if (res.status === 204) {
-    alert('刪除成功');
-    setOutput({});
+
+  if (res.ok) {
+    alert('新增成功');
+    getUsers();
   } else {
-    alert('用戶不存在');
+    alert('新增失敗');
   }
 }

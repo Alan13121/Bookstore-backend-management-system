@@ -4,16 +4,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.example.demo.service.CustomUserDetailsService;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,11 +17,12 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    // ✅ 建構子注入
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -39,7 +36,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         System.out.println("[DEBUG] JwtAuthenticationFilter triggered for URI: " + request.getRequestURI());
 
-
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);
             if (jwtTokenProvider.validateToken(token)) {
@@ -51,17 +47,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             List<String> roles = jwtTokenProvider.getRolesFromToken(token);
 
             System.out.println("[DEBUG] Roles from JWT: " + roles);
 
-            List<GrantedAuthority> authorities = roles.stream()
-                                                    .map(SimpleGrantedAuthority::new)
-                                                    .map(authority -> (GrantedAuthority) authority)
-                                                    .toList();
-
+            List<SimpleGrantedAuthority> authorities = roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(username, null, authorities);
@@ -70,8 +63,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
 
-
         filterChain.doFilter(request, response);
     }
 }
-

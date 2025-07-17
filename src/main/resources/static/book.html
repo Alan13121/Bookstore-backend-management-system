@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>📖 編輯書籍</title>
+</head>
+<body>
+<h1>📖 編輯書籍</h1>
+<a href="books.html">返回書籍列表</a>
+
+<form id="edit-book-form">
+  <p>ID: <span id="book-id"></span></p>
+  <p>書名: <input type="text" id="book-title"></p>
+  <p>作者: <input type="text" id="book-author"></p>
+  <p>簡述: <input type="text" id="book-desc"></p>
+  <p>定價: <input type="number" id="book-list-price"></p>
+  <p>售價: <input type="number" id="book-sale-price"></p>
+
+  <button type="submit">保存</button>
+</form>
+
+<script src="/js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  if (!id) {
+    alert('缺少書籍 ID');
+    location.href = 'books.html';
+    return;
+  }
+
+  // 載入書籍資料
+  fetch(`/api/books/${id}`, { headers: authHeader() })
+    .then(res => {
+      if (!res.ok) throw new Error('找不到書籍');
+      return res.json();
+    })
+    .then(book => {
+      document.getElementById('book-id').textContent = book.id;
+      document.getElementById('book-title').value = book.title;
+      document.getElementById('book-author').value = book.author;
+      document.getElementById('book-desc').value = book.description;
+      document.getElementById('book-list-price').value = book.listPrice;
+      document.getElementById('book-sale-price').value = book.salePrice;
+    })
+    .catch(err => {
+      alert(err.message);
+      location.href = 'books.html';
+    });
+
+  document.getElementById('edit-book-form').addEventListener('submit', e => {
+    e.preventDefault();
+
+    const updatedBook = {
+      title: document.getElementById('book-title').value,
+      author: document.getElementById('book-author').value,
+      description: document.getElementById('book-desc').value,
+      listPrice: parseFloat(document.getElementById('book-list-price').value),
+      salePrice: parseFloat(document.getElementById('book-sale-price').value)
+    };
+
+    fetch(`/api/books/${id}`, {
+      method: 'PUT',
+      headers: { ...authHeader(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedBook)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('更新失敗');
+      return res.json();
+    })
+    .then(() => {
+      alert('更新成功');
+      location.href = 'books.html';
+    })
+    .catch(err => alert(err.message));
+  });
+});
+</script>
+</body>
+</html>

@@ -1,8 +1,6 @@
 package com.example.demo.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -37,10 +35,10 @@ public class JwtTokenProvider {
                 .collect(Collectors.toList());
 
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
+                .subject(userDetails.getUsername())
                 .claim("roles", roles)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .issuedAt(now)
+                .expiration(expiryDate)
                 .signWith(getSigningKey(), Jwts.SIG.HS512)
                 .compact();
     }
@@ -50,53 +48,50 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()  
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token);
+            parseClaims(token); // 能成功解析就算合法
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             System.err.println("Invalid JWT: " + e.getMessage());
+            return false;
         }
-        return false;
     }
 
     /**
-     * 取得 username
+     * 從 Token 取得 username
      */
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
+        Claims claims = parseClaims(token);
         return claims.getSubject();
     }
 
     /**
-     * 取得角色 (可選)
+     * 從 Token 取得角色
      */
     @SuppressWarnings("unchecked")
     public List<String> getRolesFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
+        Claims claims = parseClaims(token);
         return claims.get("roles", List.class);
     }
 
     /**
-     * 取得簽名密鑰
+     * 解析 Token 並返回 Claims
+     */
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    /**
+     * 獲取簽名用 SecretKey
      */
     private SecretKey getSigningKey() {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        if (keyBytes.length < 64) { // 小於 512 bits
+        if (keyBytes.length < 64) {
             throw new IllegalArgumentException("JWT secret key must be at least 512 bits (64 bytes) for HS512.");
         }
         return Keys.hmacShaKeyFor(keyBytes);
     }
-
 }

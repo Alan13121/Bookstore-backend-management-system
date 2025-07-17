@@ -37,18 +37,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                                // 路徑開放
+                                // 登入用API、swagger開放
                                 .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                                
-                                // 靜態資源開放
+                                // 靜態資源、網頁html 開放
                                 .requestMatchers("/", "/static/**", "/js/**", "/css/**", "/*.html").permitAll()
-
-                                // 需要 ADMIN 或 STAFF
+                                // 需要任一 ADMIN STAFF
                                 .requestMatchers( "/api/books/**").hasAnyRole("ADMIN", "STAFF")
-
                                 // only ADMIN
                                 .requestMatchers( "/api/users/**").hasRole("ADMIN")
-
+                                // 測試用
+                                .requestMatchers("/actuator/**").permitAll()
                                 // 其他全部需要登入
                                 .anyRequest().authenticated()
                 )

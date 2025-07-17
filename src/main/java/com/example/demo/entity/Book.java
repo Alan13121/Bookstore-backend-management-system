@@ -27,8 +27,6 @@ public class Book {
     @Column(name = "sale_price")
     private BigDecimal salePrice;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
-    private LocalDateTime createdAt;
 
 }
 

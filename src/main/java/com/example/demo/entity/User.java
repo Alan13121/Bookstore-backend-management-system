@@ -47,11 +47,4 @@ public class User {
     @EqualsAndHashCode.Exclude
     private Set<Role> roles = new HashSet<>();
 
-
-    @Override
-    public String toString() {
-        return "User{id=" + id + ", username='" + username + "', email='" + email + "', enabled=" + enabled + "}";
-    }
-
-
 }

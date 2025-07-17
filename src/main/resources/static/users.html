@@ -4,34 +4,37 @@
 <body>
 <h1>👤 用戶管理</h1>
 <a href="/index.html">返回首頁</a>
-<h3>🔍 查詢所有用戶</h3>
-<button onclick="getUsers()">查詢所有用戶</button>
-<h3>🔍 查詢單個用戶</h3>
-<input type="number" id="user-id-get" placeholder="用戶ID">
-<button onclick="getUser()">查詢用戶</button>
-<h3>➕ 新增用戶</h3>
-<input type="text" id="user-username" placeholder="Username">
-<input type="password" id="user-password" placeholder="Password">
-<input type="text" id="user-fullname" placeholder="Full Name">
-<input type="text" id="user-email" placeholder="Email">
-<input type="text" id="user-phone" placeholder="Phone">
-<input type="text" id="user-enabled" placeholder="Enabled (true/false)">
-<input type="text" id="user-role-ids" placeholder="Role IDs, 逗號分隔">
-<button onclick="createUser()">新增用戶</button>
-<h3>✏️ 更新用戶資料</h3>
-<input type="number" id="user-id-update" placeholder="用戶ID">
-<input type="text" id="user-username-update" placeholder="Username">
-<input type="text" id="user-fullname-update" placeholder="Full Name">
-<input type="text" id="user-email-update" placeholder="Email">
-<input type="text" id="user-phone-update" placeholder="Phone">
-<input type="text" id="user-enabled-update" placeholder="Enabled (true/false)">
-<input type="text" id="user-role-ids-update" placeholder="Role IDs, 逗號分隔">
-<button onclick="updateUser()">更新用戶</button>
 
-<h3>🗑️ 刪除用戶</h3>
-<input type="number" id="user-id-delete" placeholder="用戶ID">
-<button onclick="deleteUser()">刪除用戶</button>
+<h3>📋 用戶列表</h3>
+<div id="user-table"></div>
+
+<h3>➕ 新增用戶</h3>
+<form id="create-user-form">
+  <input type="text" id="new-username" placeholder="Username">
+  <input type="text" id="new-password" placeholder="Password">
+  <input type="text" id="new-fullName" placeholder="Full Name">
+  <input type="text" id="new-email" placeholder="Email">
+  <input type="text" id="new-phone" placeholder="Phone">
+  <input type="text" id="new-enabled" placeholder="Enabled (true/false)">
+  <input type="text" id="new-roles" placeholder="Role IDs, 逗號分隔">
+  <button type="submit">新增用戶</button>
+</form>
+
+
 <pre id="output"></pre>
+
 <script src="/js/common.js"></script>
 <script src="/js/users.js"></script>
-</body></html>
+<script>
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    getUsers();
+
+    document.getElementById('create-user-form').addEventListener('submit', e => {
+      e.preventDefault();
+      createUser();
+    });
+  });
+
+</script>
+</body>

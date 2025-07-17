@@ -27,13 +27,11 @@ public class Role {
     @EqualsAndHashCode.Exclude
     private Set<User> users;
 
-    @Override
-    public String toString() {
-        return "Role{id=" + id + ", name='" + name + "'}";
+    public Role(Integer id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
-    public String getName(){
-        return name;
-    }
+    public Role() {}
 
 }
