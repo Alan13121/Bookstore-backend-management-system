@@ -58,7 +58,7 @@ public class UserController {
         User user = new User();
         user.setUsername(request.getUsername());
 
-        //user.setPassword(request.getPassword());  加密
+        //加密密碼
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         user.setPassword(encodedPassword);
 
