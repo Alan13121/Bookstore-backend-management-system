@@ -1,11 +1,23 @@
-# Use a base image with Java 17 (or your version)
-FROM openjdk:17-jdk-alpine
+# --- Stage 1: Build the jar ---
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
-# Copy the jar into the container
-COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+WORKDIR /app
 
-# Expose port
+# 複製 pom.xml 和 src 資料夾
+COPY pom.xml .
+COPY src ./src
+
+# 執行 Maven 打包
+RUN mvn clean package -DskipTests
+
+# --- Stage 2: Run the app ---
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+
+# 從上一階段複製 jar
+COPY --from=builder /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
+
 EXPOSE 8080
 
-# Run the app
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

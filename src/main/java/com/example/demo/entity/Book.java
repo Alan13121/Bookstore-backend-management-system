@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "books")
-@Data
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
