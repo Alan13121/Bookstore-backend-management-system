@@ -117,30 +117,10 @@ volumes:
   mariadb_data:
 ```
 
----
-
-### 3️ 編譯打包
-
-```bash
-./mvnw clean package -DskipTests
-```
-
-或（已安裝 Maven）
-
-```bash
-mvn clean package -DskipTests
-```
-
-打包完成後會在 `target/` 下產生：
-
-```
-target/demo-0.0.1-SNAPSHOT.jar
-```
-
 
 ---
 
-### 4️ 建立 Docker Image 並啟動
+### 3 建立 Docker Image 並啟動
 
 ```bash
 docker-compose up --build -d
@@ -148,7 +128,7 @@ docker-compose up --build -d
 
 ---
 
-### 5️ 確認服務狀態
+### 4 確認服務狀態
 
 查看容器狀態：
 
