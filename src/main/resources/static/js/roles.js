@@ -90,3 +90,96 @@ async function updateRule(id) {
 
 // 頁面載入時
 loadRules();
+
+
+
+
+const roleApiBase = "/api/roles";
+const roleHeaders = authHeader();
+
+// 新增角色
+document.getElementById("roleForm2").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("roleName").value.trim();
+  if (!name) {
+    alert("請輸入角色名稱！");
+    return;
+  }
+
+  const res = await fetch(roleApiBase, {
+    method: "POST",
+    headers: roleHeaders,
+    body: JSON.stringify({ name })
+  });
+
+  if (res.ok) {
+    alert("✅ 新增角色成功");
+    document.getElementById("roleForm2").reset();
+    loadRoles();
+  } else {
+    alert("❌ 新增角色失敗");
+  }
+});
+
+// 載入角色列表
+async function loadRoles() {
+  const res = await fetch(roleApiBase, { headers: roleHeaders });
+  if (!res.ok) {
+    alert("❌ 載入角色失敗");
+    return;
+  }
+
+  const data = await res.json();
+
+  const list = document.getElementById("rolesList");
+  list.innerHTML = "";
+
+  data.forEach(role => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <input value="${role.name}" id="name-${role.id}">
+      <button onclick="updateRole(${role.id})">更新</button>
+      <button onclick="deleteRole(${role.id})">刪除</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// 刪除角色
+async function deleteRole(id) {
+  const res = await fetch(`${roleApiBase}/${id}`, {
+    method: "DELETE",
+    headers: roleHeaders
+  });
+  if (res.ok) {
+    alert("✅ 刪除角色成功");
+    loadRoles();
+  } else {
+    alert("❌ 刪除角色失敗");
+  }
+}
+
+// 更新角色
+async function updateRole(id) {
+  const name = document.getElementById(`name-${id}`).value.trim();
+  if (!name) {
+    alert("請輸入角色名稱！");
+    return;
+  }
+
+  const res = await fetch(`${roleApiBase}/${id}`, {
+    method: "PUT",
+    headers: roleHeaders,
+    body: JSON.stringify({ name })
+  });
+  if (res.ok) {
+    alert("✅ 更新角色成功");
+    loadRoles();
+  } else {
+    alert("❌ 更新角色失敗");
+  }
+}
+
+// 頁面載入時先載入角色
+loadRoles();

@@ -43,13 +43,22 @@ if (!token) {
 
   menu.innerHTML = `
     <li><a href="#" onclick="logout()">🚪 登出</a></li>
-    <li><a href="#" id="booksLink">📖 書籍管理</a></li>
   `;
-  
+  if (user.roles && user.roles.includes("ROLE_STAFF")) {
+    menu.innerHTML += `
+    <li><a href="#" id="booksLink">📖 書籍管理</a></li>
+    `;
+  }
   if (user.roles && user.roles.includes("ROLE_ADMIN")) {
     menu.innerHTML += `
-      <li><a href="#" id="usersLink">👤 用戶管理</a></li>
-      <li><a href="#" id="rolesLink">🛡️ 權限管理</a></li>
+    <li><a href="#" id="usersLink">👤 用戶管理</a></li>
+    <li><a href="#" id="rolesLink">🛡️ 角色與權限管理</a></li>
+    `;
+  }
+  if (user.roles && user.roles.includes("ROLE_WORKER")) {
+    menu.innerHTML += `
+    <li><a href="/swagger-ui/index.html">♻️ swagger</a></li>
+    <h1>現在是工作時間 Work Time!</h1>
     `;
   }
 
