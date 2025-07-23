@@ -8,7 +8,8 @@ VALUES
 INSERT INTO roles (id, name)
 VALUES
 (1, 'ADMIN'),
-(2, 'STAFF');
+(2, 'STAFF'),
+(3, 'WORKER');
 
 -- 關聯 users 和 roles
 INSERT INTO user_roles (user_id, role_id)
@@ -22,3 +23,10 @@ INSERT INTO books ( title, author, description , list_price, sale_price)
 VALUES
 ('Spring Boot in Action', 'Craig Walls','good book', 39.99, 100),
 ('Hibernate Tips', 'Thorben Janssen','good book', 29.99, 50);
+
+-- 初始化 url_role_mapping 表
+INSERT INTO url_role_mapping (url_pattern, roles) VALUES
+('/api/books/.*', 'ADMIN,STAFF'),
+('/api/users/.*', 'ADMIN'),
+('/api/roles/.*', 'ADMIN');
+

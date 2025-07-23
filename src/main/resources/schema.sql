@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS user_roles;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS url_role_mapping;
 
 CREATE TABLE IF NOT EXISTS `books` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -38,4 +39,11 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   PRIMARY KEY (`user_id`, `role_id`),
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `url_role_mapping` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `url_pattern` VARCHAR(255) NOT NULL,
+  `roles` VARCHAR(255) NOT NULL,  -- 逗號分隔: "ADMIN,STAFF"
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

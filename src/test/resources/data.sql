@@ -8,7 +8,8 @@ VALUES
 INSERT INTO roles (id, name)
 VALUES
 (1, 'ADMIN'),
-(2, 'STAFF');
+(2, 'STAFF'),
+(3, 'WORKER');
 
 -- 關聯 users 和 roles
 INSERT INTO user_roles (user_id, role_id)
