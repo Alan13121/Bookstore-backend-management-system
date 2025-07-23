@@ -29,12 +29,12 @@ function renderUserTable(users) {
       <tr>
         <td>${user.id}</td>
         <td>${user.username}</td>
-        <td>${user.fullName}</td>
-        <td>${user.phone}</td>
-        <td>${user.email}</td>
+        <td>${user.fullName ?? ''}</td>
+        <td>${user.phone ?? ''}</td>
+        <td>${user.email ?? ''}</td>
         <td>
-          <a href="#" onclick="deleteUser(${user.id})">刪除</a> 
-          <a href="user.html?id=${user.id}">更改</a>
+          <a href="#" class="delete-user" data-id="${user.id}">刪除</a> 
+          <a href="#" class="update-user" data-id="${user.id}">更改</a>
         </td>
       </tr>
     `;
@@ -42,6 +42,24 @@ function renderUserTable(users) {
 
   html += '</table>';
   container.innerHTML = html;
+
+  // 綁定刪除按鈕
+  container.querySelectorAll('.delete-user').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.dataset.id;
+      deleteUser(id);
+    });
+  });
+
+  // 綁定更改按鈕
+  container.querySelectorAll('.update-user').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.dataset.id;
+      loadPageWithToken(`/user/user.html?id=${id}`,id);
+    });
+  });
 }
 
 // 刪除用戶
@@ -57,33 +75,6 @@ async function deleteUser(id) {
     getUsers(); // 重新刷新
   } else {
     alert('刪除失敗');
-  }
-}
-
-// 編輯用戶
-async function editUser(id) {
-  const fullName = prompt('輸入新全名：');
-  const email = prompt('輸入新Email：');
-  const phone = prompt('輸入新電話：');
-
-  const user = {
-    fullName: fullName,
-    email: email,
-    phone: phone
-  };
-
-  const res = await fetch(`/api/users/${id}`, {
-    method: 'PUT',
-    headers: authHeader(),
-    body: JSON.stringify(user)
-  });
-
-  if (res.ok) {
-    alert('更新成功');
-    getUsers(); // 重新刷新
-  } else {
-    const err = await res.text();
-    alert(`更新失敗: ${err}`);
   }
 }
 

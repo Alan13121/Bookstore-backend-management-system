@@ -39,7 +39,7 @@ function renderBookTable(books) {
         <td>${book.salePrice}</td>
         <td>
           <a href="#" onclick="deleteBook(${book.id})">刪除</a> 
-          <a href="book.html?id=${book.id}">更改</a>
+          <a href="#" class="update-book" data-id="${book.id}">更改</a>
         </td>
       </tr>
     `;
@@ -48,7 +48,17 @@ function renderBookTable(books) {
   html += '</tbody></table>';
 
   container.innerHTML = html;
+
+  // 綁定「更改」按鈕
+  container.querySelectorAll('.update-book').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.dataset.id;
+      loadPageWithToken(`/book/book.html?id=${id}`);
+    });
+  });
 }
+
 //一本
 async function getBook() {
   const id = document.getElementById('book-id-get').value;

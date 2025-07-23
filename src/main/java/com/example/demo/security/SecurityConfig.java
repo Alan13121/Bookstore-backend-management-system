@@ -46,10 +46,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // 登入、swagger、健康檢查開放
                 .requestMatchers(
+                        "/auth/*.html", 
                         "/api/auth/**", 
                         "/swagger-ui/**", 
                         "/v3/api-docs/**", 
-                        "/actuator/**"
+                        "/actuator/**",
+                        "/favicon.ico"
                 ).permitAll()
 
                 // 靜態資源、網頁 html 開放

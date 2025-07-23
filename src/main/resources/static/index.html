@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>📚 Bookshop 管理系統 - 首頁</title>
+<title>Bookshop 管理系統 - 首頁</title>
 </head>
 <body>
 
-<h1>📚 Bookshop 管理系統</h1>
+<h1>Bookshop 管理系統</h1>
 
 <ul id="menu">
   <!-- 這裡會由 JS 動態生成 -->
 </ul>
 
+<script src="/js/common.js"></script>
 <script>
 const token = localStorage.getItem("token");
 const menu = document.getElementById("menu");
@@ -32,8 +33,8 @@ function logout() {
 if (!token) {
   // 未登入
   menu.innerHTML = `
-    <li><a href="/login.html">🔐 登入</a></li>
-    <li><a href="/register.html">👥 註冊</a></li>
+    <li><a href="/auth/login.html">🔐 登入</a></li>
+    <li><a href="/auth/register.html">👥 註冊</a></li>
   `;
 } else {
   const user = decodeToken(token);
@@ -42,16 +43,31 @@ if (!token) {
 
   menu.innerHTML = `
     <li><a href="#" onclick="logout()">🚪 登出</a></li>
-    <li><a href="/books.html">📖 書籍管理</a></li>
+    <li><a href="#" id="booksLink">📖 書籍管理</a></li>
   `;
-
+  
   if (user.roles && user.roles.includes("ROLE_ADMIN")) {
     menu.innerHTML += `
-      <li><a href="/users.html">👤 用戶管理</a></li>
+      <li><a href="#" id="usersLink">👤 用戶管理</a></li>
+      <li><a href="#" id="rolesLink">🛡️ 權限管理</a></li>
     `;
   }
+
+  // 書籍管理
+  document.getElementById("booksLink")?.addEventListener("click", () => {
+    loadPageWithToken("book/books.html");
+  });
+
+  // 用戶管理
+  document.getElementById("usersLink")?.addEventListener("click", () => {
+    loadPageWithToken("/user/users.html");
+  });
+
+  // 權限管理
+  document.getElementById("rolesLink")?.addEventListener("click", () => {
+    loadPageWithToken("/user/roles.html");
+  });
 }
 </script>
-
 </body>
 </html>

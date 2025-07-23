@@ -35,6 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = null;
 
         System.out.println("[DEBUG] JwtAuthenticationFilter triggered for URI: " + request.getRequestURI());
+        System.out.println("[DEBUG] Authorization header: " + header);
+
 
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);

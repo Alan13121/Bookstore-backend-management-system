@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>👤 編輯用戶</title>
+</head>
+<body>
+<h1>👤 編輯用戶</h1>
+<a href="#" id="backToUsers">返回用戶列表</a>
+
+<form id="edit-user-form">
+  <p>ID: <span id="user-id"></span></p>
+  <p>Username: <input type="text" id="username" disabled></p>
+  <p>Full Name: <input type="text" id="fullName"></p>
+  <p>Phone: <input type="text" id="phone"></p>
+  <p>Email: <input type="text" id="email"></p>
+  <p>Enabled: 
+    <select id="enabled">
+      <option value="true">true</option>
+      <option value="false">false</option>
+    </select>
+  </p>
+
+  <p>目前擁有角色: <span id="current-roles"></span></p>
+
+  <p>Roles:</p>
+  <div id="roles">
+    <label><input type="checkbox" value="1"> ROLE_ADMIN</label><br>
+    <label><input type="checkbox" value="2"> ROLE_STAFF</label><br>
+    <label><input type="checkbox" value="3"> ROLE_WORKER</label><br>
+  </div>
+
+  <button type="submit">保存</button>
+</form>
+
+<script src="/js/common.js"></script>
+<script>
+(() => {
+  document.addEventListener('DOMContentLoaded', () => {
+    initPage();
+  });
+
+  const initPage = () => {
+    bindBackButton();
+    loadUserData();
+    bindFormSubmit();
+  };
+
+  const bindBackButton = () => {
+    document.querySelector("#backToUsers")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      loadPageWithToken("/user/users.html");
+    });
+  };
+
+  const loadUserData = async () => {
+    const userId = window.__USER_ID__;
+    if (!userId) {
+      alert('沒有提供用戶ID');
+      loadPageWithToken("/user/users.html");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/users/${userId}`, { headers: authHeader() });
+      if (!res.ok) throw new Error(await res.text());
+      const user = await res.json();
+
+      fillUserForm(user);
+    } catch (err) {
+      alert('載入用戶失敗');
+      console.error(err);
+    }
+  };
+
+  const fillUserForm = (user) => {
+    document.querySelector('#user-id').textContent = user.id;
+    document.querySelector('#username').value = user.username || '';
+    document.querySelector('#fullName').value = user.fullName || '';
+    document.querySelector('#phone').value = user.phone || '';
+    document.querySelector('#email').value = user.email || '';
+    document.querySelector('#enabled').value = String(user.enabled);
+
+    if (user.roles?.length) {
+      document.querySelector('#current-roles').textContent = user.roles.join(', ');
+    } else {
+      document.querySelector('#current-roles').textContent = '無';
+    }
+
+    if (user.roleIds) {
+      user.roleIds.forEach(id => {
+        document.querySelector(`#roles input[value="${id}"]`)?.setAttribute("checked", true);
+      });
+    }
+  };
+
+  const bindFormSubmit = () => {
+    document.querySelector('#edit-user-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const userId = window.__USER_ID__;
+      const roleIds = Array.from(document.querySelectorAll('#roles input:checked')).map(cb => parseInt(cb.value));
+
+      const updatedUser = {
+        fullName: document.querySelector('#fullName').value,
+        phone: document.querySelector('#phone').value,
+        email: document.querySelector('#email').value,
+        enabled: document.querySelector('#enabled').value === 'true',
+        roleIds
+      };
+
+      try {
+        const res = await fetch(`/api/users/${userId}`, {
+          method: 'PUT',
+          headers: { ...authHeader(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedUser)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert('更新成功');
+        loadPageWithToken("/user/users.html");
+      } catch (err) {
+        alert(`更新失敗: ${err}`);
+      }
+    });
+  };
+})();
+</script>
+
+</body>
+</html>

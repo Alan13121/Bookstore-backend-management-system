@@ -1,50 +1,60 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import com.example.demo.entity.Role;
+import com.example.demo.service.RoleService;
 
-import com.example.demo.entity.UrlRoleMapping;
-import com.example.demo.service.UrlRoleMappingService;
-
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/roles")
-@Tag(name = "角色權限管理", description = "動態訪問權限更改")
+@Tag(name = "角色管理", description = "角色的增查改刪")
 public class RoleController {
 
-    @Autowired
-    private UrlRoleMappingService service;
+    private final RoleService roleService;
 
-    @GetMapping("/mappings")
-    @Operation(summary = "查詢所有角色及訪問權限")
-    public List<UrlRoleMapping> getAll() {
-        return service.getAll();
+    public RoleController(RoleService roleService) {
+        this.roleService = roleService;
     }
 
-    @PostMapping("/mappings")
-    @Operation(summary = "新增角色及訪問權限")
-    public UrlRoleMapping save(@RequestBody UrlRoleMapping mapping) {
-        return service.save(mapping);
+    @GetMapping
+    public List<Role> getAllRoles() {
+        return roleService.getAllRoles();
     }
 
-    @PutMapping("/mappings/{id}")
-    @Operation(summary = "更新角色及訪問權限")
-    public UrlRoleMapping update(@PathVariable Long id, @RequestBody UrlRoleMapping mapping) {
-        mapping.setId(id);
-        return service.save(mapping);
+    @GetMapping("/{id}")
+    public ResponseEntity<Role> getRoleById(@PathVariable Integer id) {
+        return roleService.getRoleById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/mappings/{id}")
-    @Operation(summary = "刪除角色及訪問權限")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    @PostMapping
+    public Role createRole(@RequestBody Role role) {
+        return roleService.createRole(role);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Role> updateRole(@PathVariable Integer id, @RequestBody Role role) {
+        try {
+            Role updated = roleService.updateRole(id, role);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRole(@PathVariable Integer id) {
+        roleService.deleteRole(id);
+        return ResponseEntity.noContent().build();
     }
 }
-
 

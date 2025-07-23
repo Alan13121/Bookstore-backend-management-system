@@ -6,7 +6,8 @@
 </head>
 <body>
 <h1>📖 編輯書籍</h1>
-<a href="books.html">返回書籍列表</a>
+<a href="#" id="backToBooks">返回書籍列表</a>
+
 
 <form id="edit-book-form">
   <p>ID: <span id="book-id"></span></p>
@@ -22,11 +23,18 @@
 <script src="/js/common.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  const backToBooks = document.getElementById("backToBooks");
+  backToBooks?.addEventListener("click", (e) => {
+    e.preventDefault();
+    loadPageWithToken("/book/books.html");
+  });
+
+  // 下面保留你現有的載入與表單提交邏輯
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
   if (!id) {
     alert('缺少書籍 ID');
-    location.href = 'books.html';
+    loadPageWithToken('/book/books.html');
     return;
   }
 
@@ -46,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(err => {
       alert(err.message);
-      location.href = 'books.html';
+      loadPageWithToken('/book/books.html');
     });
 
   document.getElementById('edit-book-form').addEventListener('submit', e => {
@@ -71,11 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .then(() => {
       alert('更新成功');
-      location.href = 'books.html';
+      loadPageWithToken("/book/books.html");
     })
     .catch(err => alert(err.message));
   });
 });
+
 </script>
 </body>
 </html>

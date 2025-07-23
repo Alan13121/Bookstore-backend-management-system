@@ -29,4 +29,3 @@ INSERT INTO url_role_mapping (url_pattern, roles) VALUES
 ('/api/books/.*', 'ADMIN,STAFF'),
 ('/api/users/.*', 'ADMIN'),
 ('/api/roles/.*', 'ADMIN');
-
