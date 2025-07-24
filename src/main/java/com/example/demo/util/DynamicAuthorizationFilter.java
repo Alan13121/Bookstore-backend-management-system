@@ -5,15 +5,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import com.example.demo.entity.UrlRoleMapping;
+import com.example.demo.service.UrlRoleMappingService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.example.demo.entity.UrlRoleMapping;
-import com.example.demo.service.UrlRoleMappingService;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,17 +25,28 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
     @Autowired
     private UrlRoleMappingService mappingService;
 
+    private static final List<String> WHITELIST = List.of(
+        "/api/roles/mappings/public",
+        "/favicon.ico"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String requestURI = request.getRequestURI();
+        String uri = request.getRequestURI();
+
+        // 放行白名單 URL（不進行動態權限檢查）
+        if (WHITELIST.stream().anyMatch(uri::equals)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         List<UrlRoleMapping> mappings = mappingService.getAll();
 
         for (UrlRoleMapping mapping : mappings) {
-            if (requestURI.matches(mapping.getUrlPattern().replace("**", ".*"))) {
+            if (uri.matches(mapping.getUrlPattern().replace("**", ".*"))) {
                 String[] requiredRoles = mapping.getRoles().split(",");
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 

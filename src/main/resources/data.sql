@@ -10,7 +10,9 @@ INSERT INTO roles (id, name)
 VALUES
 (1, 'ADMIN'),
 (2, 'STAFF'),
-(3, 'WORKER');
+(3, 'WORKER'),
+(4, 'A-MANAGER'),
+(5, 'B-MANAGER');
 
 -- 關聯 users 和 roles
 INSERT INTO user_roles (user_id, role_id)
@@ -18,8 +20,12 @@ VALUES
 (1, 1),
 (1, 2),
 (1, 3),
+(1, 4),
+(1, 5),
 (2, 2),
-(3, 3);
+(2, 4),
+(3, 3),
+(3, 5);
 
 -- 初始化 books 表
 INSERT INTO books ( title, author, description , list_price, sale_price)
@@ -34,4 +40,6 @@ INSERT INTO url_role_mapping (url_pattern, roles) VALUES
 ('/api/users/.*', 'ADMIN'),
 ('/api/roles/.*', 'ADMIN'),
 ('/book/.*', 'ADMIN,STAFF'),
-('/user/.*', 'ADMIN');
+('/user/.*', 'ADMIN'),
+('/a_office/.*', 'A-MANAGER'),
+('/b_office/.*', 'B-MANAGER');

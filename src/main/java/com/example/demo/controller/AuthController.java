@@ -122,5 +122,21 @@ public class AuthController {
         private String newPassword;
     }
 
+    @Operation(summary = "重新發行 Token（例如角色修改後）")
+    @GetMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("未登入");
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String newToken = jwtTokenProvider.generateToken(userDetails);
+
+        return ResponseEntity.ok(new AuthResponse(newToken));
+    }
+
+
 
 }

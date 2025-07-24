@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.Dto.PublicRoleMappingDTO;
 import com.example.demo.entity.UrlRoleMapping;
 import com.example.demo.service.UrlRoleMappingService;
 
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
@@ -45,6 +47,18 @@ public class RoleMappingController {
     public void delete(@PathVariable Long id) {
         urlRoleMappingservice.delete(id);
     }
+
+    @GetMapping("/public")
+    @Operation(summary = "公開版角色規則（前端選單用）")
+    public List<PublicRoleMappingDTO> getPublicMappings() {
+        return urlRoleMappingservice.getAll().stream()
+            .map(mapping -> new PublicRoleMappingDTO(
+                mapping.getUrlPattern(),
+                mapping.getRoles()
+            ))
+            .collect(Collectors.toList());
+    }
+
 }
 
 

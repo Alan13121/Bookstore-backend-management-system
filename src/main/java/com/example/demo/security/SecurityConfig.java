@@ -1,6 +1,7 @@
 package com.example.demo.security;
 
-import com.example.demo.util.*;
+import com.example.demo.util.DynamicAuthorizationFilter;
+import com.example.demo.util.JwtAuthenticationFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -45,7 +46,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
                 // 登入、swagger、健康檢查開放
-                .requestMatchers(
+                 .requestMatchers(
                         "/auth/*.html", 
                         "/api/auth/**", 
                         "/swagger-ui/**", 
@@ -63,17 +64,17 @@ public class SecurityConfig {
                         "/*.html"
                 ).permitAll()
 
-                // 其他全部需要認證
+                // 其他都需要登入（授權由 Filter 處理）
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
 
-        // 加入 JWT 驗證 Filter
+        //  JWT 驗證 Filter（先驗證身份）
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // 加入動態授權 Filter
+        //  動態授權 Filter（後續比對角色）
         http.addFilterAfter(dynamicAuthorizationFilter, JwtAuthenticationFilter.class);
 
         return http.build();

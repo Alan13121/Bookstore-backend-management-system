@@ -2,81 +2,129 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bookshop 管理系統 - 首頁</title>
+<title>Bookshop 管理系統</title>
 </head>
 <body>
 
 <h1>Bookshop 管理系統</h1>
 
 <ul id="menu">
-  <!-- 這裡會由 JS 動態生成 -->
+  <!-- 選單動態生成 -->
 </ul>
 
 <script src="/js/common.js"></script>
 <script>
-const token = localStorage.getItem("token");
-const menu = document.getElementById("menu");
-
+// JWT 解碼
 function decodeToken(token) {
   if (!token) return null;
-  const payload = token.split('.')[1];
-  const decoded = atob(payload);
-  return JSON.parse(decoded);
+  try {
+    const payload = token.split('.')[1];
+    const decoded = atob(payload);
+    return JSON.parse(decoded);
+  } catch (e) {
+    console.error("解碼 token 失敗", e);
+    return null;
+  }
 }
 
+// 權限檢查
+async function canAccess(url, userRoles) {
+  try {
+    const res = await fetch("/api/roles/mappings/public", { headers: authHeader() });
+    if (!res.ok) {
+      console.error("無法獲取訪問規則");
+      return false;
+    }
+
+    const mappings = await res.json();
+
+    for (const mapping of mappings) {
+      if (new RegExp(mapping.urlPattern).test(url)) {
+        const allowedRoles = mapping.roles.split(",");
+        if (userRoles.some(r => allowedRoles.includes(r))) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  } catch (e) {
+    console.error("檢查權限錯誤", e);
+    return false;
+  }
+}
+
+// 動態產生選單按鈕（通用函式）
+async function addMenuItemIfAuthorized({ url, label, page }, userRoles, menu) {
+  if (await canAccess(url, userRoles)) {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.onclick = () => loadPageWithToken(page);
+    li.appendChild(btn);
+    menu.appendChild(li);
+  }
+}
+
+// 登出
 function logout() {
   localStorage.removeItem("token");
   alert("已登出");
-  window.location.reload();
+  location.reload();
 }
 
-if (!token) {
-  // 未登入
-  menu.innerHTML = `
-    <li><a href="/auth/login.html">🔐 登入</a></li>
-    <li><a href="/auth/register.html">👥 註冊</a></li>
-  `;
-} else {
+// 初始化選單
+async function initMenu() {
+  const menu = document.getElementById("menu");
+  menu.innerHTML = ""; // 清空
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    // 未登入
+    menu.innerHTML = `
+      <li><a href="/auth/login.html">🔐 登入</a></li>
+      <li><a href="/auth/register.html">👥 註冊</a></li>
+    `;
+    return;
+  }
+
   const user = decodeToken(token);
-  console.log("當前登入的 Token:", token);
-  console.log("解碼後的 Payload:", user);
-
-  menu.innerHTML = `
-    <li><a href="#" onclick="logout()">🚪 登出</a></li>
-  `;
-  if (user.roles && user.roles.includes("ROLE_STAFF")) {
-    menu.innerHTML += `
-    <li><a href="#" id="booksLink">📖 書籍管理</a></li>
+  if (!user || !user.roles) {
+    // Token 無效
+    localStorage.removeItem("token");
+    menu.innerHTML = `
+      <li><a href="/auth/login.html">🔐 登入</a></li>
+      <li><a href="/auth/register.html">👥 註冊</a></li>
     `;
-  }
-  if (user.roles && user.roles.includes("ROLE_ADMIN")) {
-    menu.innerHTML += `
-    <li><a href="#" id="usersLink">👤 用戶管理</a></li>
-    <li><a href="#" id="rolesLink">🛡️ 角色與權限管理</a></li>
-    `;
-  }
-  if (user.roles && user.roles.includes("ROLE_WORKER")) {
-    menu.innerHTML += `
-    <li><a href="/swagger-ui/index.html">♻️ swagger</a></li>
-    <h1>現在是工作時間 Work Time!</h1>
-    `;
+    return;
   }
 
-  // 書籍管理
-  document.getElementById("booksLink")?.addEventListener("click", () => {
-    loadPageWithToken("book/books.html");
-  });
+  const userRoles = user.roles.map(r => r.replace(/^ROLE_/, ""));
 
-  // 用戶管理
-  document.getElementById("usersLink")?.addEventListener("click", () => {
-    loadPageWithToken("/user/users.html");
-  });
+  // 已登入，加入登出按鈕
+  menu.innerHTML = `<li><button id="logoutBtn">🚪 登出</button></li>`;
+  document.getElementById("logoutBtn").onclick = logout;
 
-  // 權限管理
-  document.getElementById("rolesLink")?.addEventListener("click", () => {
-    loadPageWithToken("/user/roles.html");
-  });
+  // 定義選單項目
+  const menuItems = [
+    { url: "/book/", label: "📖 書籍管理", page: "/book/books.html" },
+    { url: "/user/", label: "👤 用戶管理", page: "/user/users.html" },
+    { url: "/api/roles/", label: "🛡️ 角色權限管理", page: "/user/roles.html" },
+    { url: "/a_office/", label: "A部門", page: "/a_office/a_office.html" },
+    { url: "/b_office/", label: "B部門", page: "/b_office/b_office.html" },
+    { url: "/c_office/", label: "C部門", page: "/c_office/c_office.html" }
+  ];
+
+  // 檢查權限並顯示可見的按鈕
+  for (const item of menuItems) {
+    await addMenuItemIfAuthorized(item, userRoles, menu);
+  }
 }
+
+//啟動
+initMenu();
 </script>
+
 </body>
 </html>
