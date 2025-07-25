@@ -1,14 +1,20 @@
 // 將物件轉成格式化字串輸出
 function setOutput(content) {
-  document.getElementById('output').textContent = JSON.stringify(content, null, 2);
+  const output = document.getElementById('output');
+  if (output) {
+    output.textContent = JSON.stringify(content, null, 2);
+  } else {
+    console.warn("無法找到 #output 元素");
+  }
 }
 
 // 回傳帶 JWT 的標頭（若有 token）
 function authHeader() {
-  const token = localStorage.getItem("token"); 
-  return token
-    ? { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
-    : { 'Content-Type': 'application/json' };
+  const token = localStorage.getItem("token");
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': 'Bearer ' + token })
+  };
 }
 
 // 公用的帶 header 載入頁面函數
@@ -54,27 +60,21 @@ function loadPageWithToken(urlOrOptions, maybeId) {
 }
 
 // 驗證登入狀態，未登入則導回首頁
-function checkAuthOrRedirect() {
-  const token = localStorage.getItem('token');
-  console.log("檢查權限");
-  fetch('/api/auth/check', {
-    method: 'GET',
-    headers: authHeader()
-  })
-    .then(res => {
-      if (!res.ok) {
-        alert("未登入帳號");
-        throw new Error('未授權');
-      }
-      return res.json();
-    })
-    .then(data => {
-      console.log("驗證成功，登入者：", data);
-    })
-    .catch(() => {
-      window.location.href = '/index.html';
+async function checkAuthOrRedirect() {
+  try {
+    const res = await fetch('/api/auth/check', {
+      method: 'GET',
+      headers: authHeader()
     });
 
+    if (!res.ok) throw new Error('未授權');
+
+    const data = await res.json();
+    console.log("驗證成功，登入者：", data);
+  } catch {
+    alert("未登入帳號");
+    window.location.href = '/index.html';
+  }
 }
 
 // 嘗試更新 token，失敗就回首頁
@@ -98,5 +98,28 @@ async function refreshAndRedirect() {
   } catch (err) {
     console.error("錯誤：", err);
     window.location.href = "/index.html";
+  }
+}
+
+// 嘗試更新 token
+async function refreshToken() {
+  try {
+    const res = await fetch('/api/auth/refresh-token', {
+      method: 'GET',
+      headers: authHeader()
+    });
+
+    if (!res.ok) {
+      console.log("Token 更新失敗");
+      return null;
+    }
+
+    const data = await res.json();
+    localStorage.setItem('token', data.token);
+    console.log("Token refreshed:", data.token);
+    return data.token;
+  } catch (err) {
+    console.error("錯誤：", err);
+    return null;
   }
 }

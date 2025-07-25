@@ -1,9 +1,11 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.User;
+import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
@@ -14,11 +16,13 @@ class UserServiceTest {
 
     private UserRepository userRepository;
     private UserService userService;
+    private RoleRepository roleRepository;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        userService = new UserService(userRepository);
+        userService = new UserService(userRepository, roleRepository, passwordEncoder);
     }
 
     @Test
