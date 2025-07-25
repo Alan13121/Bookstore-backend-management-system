@@ -1,5 +1,9 @@
 async function getUsers() {
   const res = await fetch('/api/users', { headers: authHeader() });
+  if (!res.ok) {
+    alert("載入用戶失敗");
+    return;
+  }
   const data = await res.json();
   renderUserTable(data);
 }
@@ -34,12 +38,11 @@ function renderUserTable(users) {
         <td>${user.email ?? ''}</td>
         <td>
           <a href="#" class="delete-user" data-id="${user.id}">刪除</a> 
-          <a href="#" class="update-user" data-id="${user.id}">更改</a>
+          <a href="user.html?id=${user.id}" class="update-user">更改</a>
         </td>
       </tr>
     `;
   });
-
   html += '</table>';
   container.innerHTML = html;
 
@@ -49,15 +52,6 @@ function renderUserTable(users) {
       e.preventDefault();
       const id = btn.dataset.id;
       deleteUser(id);
-    });
-  });
-
-  // 綁定更改按鈕
-  container.querySelectorAll('.update-user').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const id = btn.dataset.id;
-      loadPageWithToken(`/user/user.html?id=${id}`,id);
     });
   });
 }

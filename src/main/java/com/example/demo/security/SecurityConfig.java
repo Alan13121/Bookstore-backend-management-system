@@ -61,10 +61,17 @@ public class SecurityConfig {
                         "/static/**", 
                         "/js/**", 
                         "/css/**", 
-                        "/*.html"
+                        "/*.html",
+                        "/user/**",        
+                        "/book/**",        
+                        "/auth/**",        
+                        "/a_office/**",   
+                        "/b_office/**",
+                        "/c_office/**"
                 ).permitAll()
 
-                // 其他都需要登入（授權由 Filter 處理）
+
+                // 其他都需要登入（授權由 Filter 處理）/api/
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

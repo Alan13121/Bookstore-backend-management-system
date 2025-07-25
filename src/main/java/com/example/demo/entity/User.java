@@ -1,40 +1,36 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-
-import java.util.HashSet;
-import java.util.Set;
-
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "username")
     private String username;
 
-    @Column(name = "password")
     private String password;
 
     @Column(name = "full_name")
     private String fullName;
 
-    @Column(name = "phone")
     private String phone;
 
-    @Column(name = "email")
     private String email;
 
-    @Column(name = "enabled")
     private Boolean enabled;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -47,4 +43,32 @@ public class User {
     @EqualsAndHashCode.Exclude
     private Set<Role> roles = new HashSet<>();
 
+    // === 實作 UserDetails 需要的接口方法 ===
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+            .collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // 如果你有額外欄位可以根據實際邏輯調整
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // 同上
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // 同上
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled != null && enabled;
+    }
 }

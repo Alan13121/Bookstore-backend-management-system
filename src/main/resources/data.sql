@@ -30,9 +30,9 @@ VALUES
 -- 初始化 books 表
 INSERT INTO books ( title, author, description , list_price, sale_price)
 VALUES
-('Spring Boot in Action', 'Craig Walls','good book', 39.99, 100),
-('Hibernate Tips', 'Thorben Janssen','tools book', 29.99, 50),
-('kk duelist POV learning', 'After and S1mon','jue jue jue', 5.26, 20);
+('Spring Boot in Action', 'Craig Walls','good book', 399, 100),
+('Hibernate Tips', 'Thorben Janssen','tools book', 299, 50),
+('kk duelist POV learning', 'After and S1mon','jue jue jue', 526, 20);
 
 -- 初始化 url_role_mapping 表
 INSERT INTO url_role_mapping (url_pattern, roles) VALUES

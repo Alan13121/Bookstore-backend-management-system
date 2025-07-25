@@ -58,10 +58,10 @@ async function canAccess(url, userRoles) {
 async function addMenuItemIfAuthorized({ url, label, page }, userRoles, menu) {
   if (await canAccess(url, userRoles)) {
     const li = document.createElement("li");
-    const btn = document.createElement("button");
-    btn.textContent = label;
-    btn.onclick = () => loadPageWithToken(page);
-    li.appendChild(btn);
+    const link = document.createElement("a");
+    link.textContent = label;
+    link.href = page;
+    li.appendChild(link);
     menu.appendChild(li);
   }
 }
@@ -103,10 +103,10 @@ async function initMenu() {
   const userRoles = user.roles.map(r => r.replace(/^ROLE_/, ""));
 
   // 已登入，加入登出按鈕
-  menu.innerHTML = `<li><button id="logoutBtn">🚪 登出</button></li>`;
+  menu.innerHTML = `<button id="logoutBtn">🚪 登出</button>`;
   document.getElementById("logoutBtn").onclick = logout;
 
-  // 定義選單項目
+  // 定義選單項目 url 
   const menuItems = [
     { url: "/book/", label: "📖 書籍管理", page: "/book/books.html" },
     { url: "/user/", label: "👤 用戶管理", page: "/user/users.html" },

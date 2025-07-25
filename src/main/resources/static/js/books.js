@@ -1,8 +1,11 @@
 async function getBooks() {
   const res = await fetch('/api/books', { headers: authHeader() });
+  if (!res.ok) {
+    alert("載入書籍失敗");
+    return;
+  }
   const data = await res.json();
   renderBookTable(data);//印出所有書籍
-  //setOutput(data);
 }
 //印出所有書籍
 function renderBookTable(books) {
@@ -39,7 +42,7 @@ function renderBookTable(books) {
         <td>${book.salePrice}</td>
         <td>
           <a href="#" onclick="deleteBook(${book.id})">刪除</a> 
-          <a href="#" class="update-book" data-id="${book.id}">更改</a>
+          <a href="/book/book.html?id=${book.id}" class="update-user">更改</a>
         </td>
       </tr>
     `;
@@ -48,15 +51,6 @@ function renderBookTable(books) {
   html += '</tbody></table>';
 
   container.innerHTML = html;
-
-  // 綁定「更改」按鈕
-  container.querySelectorAll('.update-book').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const id = btn.dataset.id;
-      loadPageWithToken(`/book/book.html?id=${id}`);
-    });
-  });
 }
 
 //一本

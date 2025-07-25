@@ -53,15 +53,24 @@ spring.jpa.show-sql=true
 
 #### `src/main/resources/data.sql`
 
-初始化測試資料
-密碼用Bcrypt Hash加密
-預設帳號: 
-1.
-username : admin 
-password : 6969 
-2.
-username : user 
-password : 6969
+## 初始化測試資料
+
+密碼皆使用 **Bcrypt Hash** 加密
+
+預設帳號如下：
+
+1.  
+   - `username`：`admin`  
+   - `password`：`6969`
+
+2.  
+   - `username`：`user`  
+   - `password`：`6969`
+
+3.  
+   - `username`：`worker`  
+   - `password`：`6969`
+
 
 ```sql
 -- 初始化 users 表
