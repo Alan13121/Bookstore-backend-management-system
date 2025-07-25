@@ -1,102 +1,91 @@
 package com.example.demo.util;
 
+import com.example.demo.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.Collections;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JwtAuthenticationFilterTest {
 
-    private JwtAuthenticationFilter filter;
+    @Mock
     private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private CustomUserDetailsService userDetailsService;
+
+    @Mock
+    private HttpServletRequest request;
+
+    @Mock
+    private HttpServletResponse response;
+
+    @Mock
+    private FilterChain filterChain;
+
+    @InjectMocks
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @BeforeEach
     void setUp() {
-        jwtTokenProvider = mock(JwtTokenProvider.class);
-        filter = new JwtAuthenticationFilter(jwtTokenProvider);
-
-        // 清理 SecurityContext
+        MockitoAnnotations.openMocks(this);
         SecurityContextHolder.clearContext();
     }
 
     @Test
-    void testValidTokenSetsAuthentication() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+    void shouldSetAuthenticationIfValidTokenProvided() throws ServletException, IOException {
+        String token = "valid.jwt.token";
+        String username = "testuser";
+        String header = "Bearer " + token;
 
-        String token = "valid.token.here";
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(request.getHeader("Authorization")).thenReturn(header);
         when(jwtTokenProvider.validateToken(token)).thenReturn(true);
-        when(jwtTokenProvider.getUsernameFromToken(token)).thenReturn("user1");
-        when(jwtTokenProvider.getRolesFromToken(token)).thenReturn(List.of("ROLE_USER"));
+        when(jwtTokenProvider.getUsernameFromToken(token)).thenReturn(username);
 
-        filter.doFilterInternal(request, response, chain);
+        UserDetails userDetails = new User(username, "password", Collections.emptyList());
+        when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
-        assertEquals("user1", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        assertTrue(SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-                .stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER")));
+        assertEquals(username, SecurityContextHolder.getContext().getAuthentication().getName());
 
-        verify(chain).doFilter(request, response);
+        verify(filterChain).doFilter(request, response);
     }
 
     @Test
-    void testNoHeaderDoesNothing() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+    void shouldNotSetAuthenticationIfInvalidToken() throws ServletException, IOException {
+        String token = "invalid.jwt.token";
+        String header = "Bearer " + token;
 
-        when(request.getHeader("Authorization")).thenReturn(null);
-
-        filter.doFilterInternal(request, response, chain);
-
-        assertNull(SecurityContextHolder.getContext().getAuthentication());
-        verify(chain).doFilter(request, response);
-    }
-
-    @Test
-    void testInvalidTokenDoesNothing() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
-
-        String token = "invalid.token";
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(request.getHeader("Authorization")).thenReturn(header);
         when(jwtTokenProvider.validateToken(token)).thenReturn(false);
 
-        filter.doFilterInternal(request, response, chain);
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         assertNull(SecurityContextHolder.getContext().getAuthentication());
-        verify(chain).doFilter(request, response);
+        verify(filterChain).doFilter(request, response);
     }
 
     @Test
-    void testAlreadyAuthenticatedDoesNothing() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        FilterChain chain = mock(FilterChain.class);
+    void shouldNotSetAuthenticationIfNoAuthorizationHeader() throws ServletException, IOException {
+        when(request.getHeader("Authorization")).thenReturn(null);
 
-        SecurityContextHolder.getContext().setAuthentication(
-                Mockito.mock(org.springframework.security.core.Authentication.class));
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        String token = "valid.token.here";
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtTokenProvider.validateToken(token)).thenReturn(true);
-        when(jwtTokenProvider.getUsernameFromToken(token)).thenReturn("user1");
-        when(jwtTokenProvider.getRolesFromToken(token)).thenReturn(List.of("ROLE_USER"));
-
-        filter.doFilterInternal(request, response, chain);
-
-        // 不會替換現有的認證
-        verify(chain).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(filterChain).doFilter(request, response);
     }
 }

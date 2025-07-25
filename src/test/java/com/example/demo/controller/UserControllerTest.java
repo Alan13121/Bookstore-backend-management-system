@@ -5,6 +5,7 @@ import com.example.demo.entity.User;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.CustomUserDetailsService;
+import com.example.demo.service.UrlRoleMappingService;
 import com.example.demo.util.JwtTokenProvider;
 import com.example.demo.util.JwtAuthenticationFilter;
 
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -39,6 +41,9 @@ class UserControllerTest {
     @Autowired RoleRepository roleRepository;
     @Autowired PasswordEncoder passwordEncoder;
 
+    @MockBean
+    private UrlRoleMappingService urlRoleMappingService;
+    
     @TestConfiguration
     static class MockConfig {
         @Bean UserRepository userRepository() {

@@ -1,25 +1,24 @@
 
 ---
 
-#  Bookshop Backend
+# 📚 Bookshop Backend
 
-一個基於 **Spring Boot + MariaDB + Docker** 的圖書商店後端服務，支持用戶認證、圖書管理、角色權限管理等功能。
-
----
-
-
-##  功能
-
-1. 使用 Spring Boot 框架構建
-2.  集成 Spring Security 和 JWT
-3.  使用 Spring Data JPA 操作 MariaDB
-4.  自動建表、初始化資料
-5.  以 Docker / Docker Compose 容器化部署
-6.  RESTful API
+一個基於 **Spring Boot + MariaDB + Docker** 的圖書商店後端服務，支援用戶認證、圖書管理、角色權限管理等功能。
 
 ---
 
-##  環境
+## 🚀 功能特色
+
+1. 使用 Spring Boot 架構
+2. 集成 Spring Security + JWT 驗證
+3. 使用 Spring Data JPA 操作 MariaDB
+4. 啟動自動建表並初始化資料
+5. 支援 Docker / Docker Compose 容器化部署
+6. 提供 RESTful API
+
+---
+
+## 🛠️ 環境需求
 
 * JDK 17+
 * Maven 3.8+
@@ -28,9 +27,9 @@
 
 ---
 
-## 建置與啟動
+## ⚙️ 建置與啟動
 
-### 1️ 下載專案
+### 1️⃣ 下載專案
 
 ```bash
 git clone https://github.com/your-github-username/bookshop.git
@@ -39,70 +38,56 @@ cd bookshop
 
 ---
 
-### 2️ 確認配置
+### 2️⃣ 確認配置
 
 #### `src/main/resources/application.properties`
 
 ```properties
-spring.datasource.url=jdbc:mariadb://mariadb:3306/bookshop
+spring.application.name=demo
+
+# 資料庫連線資訊
 spring.datasource.username=root
 spring.datasource.password=root
-spring.jpa.hibernate.ddl-auto=update
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+spring.datasource.url=jdbc:mariadb://localhost:3300/bookshop
+# spring.datasource.url=jdbc:mariadb://mariadb:3306/bookshop  # Docker 用
+
+# JPA 設定
 spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=none
+spring.sql.init.mode=always
+
+# JWT 設定
+jwt.secret=LyBGqP6T2B1q5m2jWj9KoP6x3F4Xk9R4p3WvZ5vL6Q8bY7R2e5S6c1G2x3N4t5Z6
+jwt.expiration-ms=86400000
 ```
 
-#### `src/main/resources/data.sql`
+---
 
-## 初始化測試資料
+## 🧪 初始化測試資料
 
-密碼皆使用 **Bcrypt Hash** 加密
+系統啟動後，會自動執行以下檔案進行資料初始化：
 
-預設帳號如下：
+* 資料表建構：`src/main/resources/schema.sql`
+* 測試資料匯入：`src/main/resources/data.sql`
 
-1.  
-   - `username`：`admin`  
-   - `password`：`6969`
+### 預設帳號資訊（密碼皆為 Bcrypt 加密，原始密碼為 `6969`）
 
-2.  
-   - `username`：`user`  
-   - `password`：`6969`
+| 使用者類型 | Username | Password |
+| ----- | -------- | -------- |
+| 管理員   | `admin`  | `6969`   |
+| 一般用戶  | `user`   | `6969`   |
+| 員工帳號  | `worker` | `6969`   |
 
-3.  
-   - `username`：`worker`  
-   - `password`：`6969`
+---
 
+## 🐳 Docker 設定
 
-```sql
--- 初始化 users 表
-INSERT INTO users (username, password, full_name, email, enabled)
-VALUES 
-('admin', '$2a$10$bCMAT38mF7e1VWwngii7JOHXjDM2WTk76kHZqhusnne/s7/QzFj2K', '6969', 'admin@example.com', 1),
-('staff', '$2a$10$bCMAT38mF7e1VWwngii7JOHXjDM2WTk76kHZqhusnne/s7/QzFj2K', '6969', 'user@example.com', 1);
-
--- 初始化 roles 表
-INSERT INTO roles (id, name)
-VALUES
-(1, 'ADMIN'),
-(2, 'STAFF');
-
--- 關聯 users 和 roles（假設是 user_roles 表）
-INSERT INTO user_roles (user_id, role_id)
-VALUES
-(1, 1),
-(1, 2),
-(2, 2);
-
--- 初始化 books 表
-INSERT INTO books ( title, author, description , list_price, sale_price)
-VALUES
-('Spring Boot in Action', 'Craig Walls','good book', 39.99, 100),
-('Hibernate Tips', 'Thorben Janssen','good book', 29.99, 50);
-
-```
-
-#### `docker-compose.yml`
+### `docker-compose.yml`
 
 ```yaml
+version: '3.8'
+
 services:
   mariadb:
     image: mariadb:10.11
@@ -128,10 +113,29 @@ volumes:
   mariadb_data:
 ```
 
+---
+
+### `Dockerfile`
+
+```dockerfile
+# --- Stage 1: Build the jar ---
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# --- Stage 2: Run the app ---
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY --from=builder /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+```
 
 ---
 
-### 3 建立 Docker Image 並啟動
+### 3️⃣ 建立 Docker Image 並啟動
 
 ```bash
 docker-compose up --build -d
@@ -139,56 +143,53 @@ docker-compose up --build -d
 
 ---
 
-### 4 確認服務狀態
-
-查看容器狀態：
+### 4️⃣ 確認服務狀態
 
 ```bash
 docker ps
 ```
 
-查看日誌：
+查看應用日誌：
 
 ```bash
 docker logs -f bookshop_app
 ```
 
-看到：
+成功訊息範例：
 
 ```
-Started DemoApplication in xx seconds
+Started DemoApplication in X.XXX seconds
 ```
-
-表示啟動成功。
 
 ---
 
-## 測試服務
+## 🌐 測試服務
 
-打開瀏覽器訪問：
+開啟瀏覽器並輸入：
 
 ```
 http://localhost:8080/
 ```
+swagger 管理API：
 
-或測試 API：
-
-```bash
-curl http://localhost:8080/api/your-endpoint
+```
+http://localhost:8080/swagger-ui/index.html
 ```
 
 ---
 
-## 停止
+## ⛔ 停止與清除
 
-停止容器：
+停止所有容器：
 
 ```bash
 docker-compose down
 ```
 
-刪除容器和資料卷：
+刪除容器與資料卷：
 
 ```bash
 docker-compose down -v
 ```
+
+---
