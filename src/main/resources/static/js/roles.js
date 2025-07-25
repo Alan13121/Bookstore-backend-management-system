@@ -279,6 +279,7 @@ async function saveUserRoles(userId, checkboxContainer) {
     if (!res.ok) throw new Error(await res.text());
     alert(`用戶 ${userId} 角色更新成功`);
     console.log(`User ${userId} 更新角色為：`, roleIds);
+    loadAllUsers();    // 全部用戶角色分配
   } catch (err) {
     alert(`更新失敗：${err}`);
     console.error(err);
