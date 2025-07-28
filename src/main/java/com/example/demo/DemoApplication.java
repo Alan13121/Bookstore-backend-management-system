@@ -9,8 +9,8 @@ import io.swagger.v3.oas.annotations.info.Info;
 @OpenAPIDefinition(
     info = @Info(
             title = "Demo 後台管理 API",
-            version = "1.0",
-            description = "這是後台管理系統的 API 文件"
+            version = "21.0",
+            description = "這是後臺管理糸統的 API 文件"
     )
 )
 

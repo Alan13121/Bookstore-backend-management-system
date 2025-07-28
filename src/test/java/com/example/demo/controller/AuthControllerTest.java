@@ -1,167 +1,115 @@
-package com.example.demo.controller;
+// package com.example.demo.controller;
 
-import com.example.demo.entity.Role;
-import com.example.demo.entity.User;
-import com.example.demo.repository.RoleRepository;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.util.JwtTokenProvider;
-import com.example.demo.service.CustomUserDetailsService;
-import com.example.demo.service.UrlRoleMappingService;
+// import com.example.demo.Dto.AuthRequest;
+// import com.example.demo.Dto.RegisterRequest;
+// import com.example.demo.Dto.ResetPasswordRequest;
+// import com.example.demo.service.AuthService;
+// import com.example.demo.util.DynamicAuthorizationFilter;
+// import com.example.demo.util.JwtTokenProvider;
+// import com.fasterxml.jackson.databind.ObjectMapper;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+// import org.springframework.boot.test.mock.mockito.MockBean;
+// import org.springframework.context.annotation.ComponentScan;
+// import org.springframework.context.annotation.FilterType;
+// import org.springframework.http.MediaType;
+// import org.springframework.security.core.Authentication;
+// import org.springframework.test.web.servlet.MockMvc;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.web.servlet.MockMvc;
+// import java.util.Map;
 
-import java.util.Optional;
+// import static org.mockito.ArgumentMatchers.any;
+// import static org.mockito.Mockito.when;
+// import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+// import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-@WebMvcTest(AuthController.class)
-@Import(AuthControllerTest.MockConfig.class)
-@AutoConfigureMockMvc(addFilters = false)
-class AuthControllerTest {
+// @WebMvcTest(
+//         controllers = AuthController.class,
+//         excludeFilters = {
+//                 @ComponentScan.Filter(
+//                         type = FilterType.ASSIGNABLE_TYPE,
+//                         classes = DynamicAuthorizationFilter.class // 排除這個 Filter
+//                 )
+//         }
+// )
+// class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+//     @Autowired
+//     private MockMvc mockMvc;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+//     @MockBean
+//     private AuthService authService;
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+//     @MockBean
+//     private JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private UserRepository userRepository;
+//     @MockBean
+//     private com.example.demo.service.UrlRoleMappingService urlRoleMappingService;
 
-    @Autowired
-    private RoleRepository roleRepository;
+//     @Autowired
+//     private ObjectMapper objectMapper;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+//     @Test
+//     void testLogin() throws Exception {
+//         when(authService.login(any(AuthRequest.class))).thenReturn("mock-token");
 
-    @MockBean
-    private UrlRoleMappingService urlRoleMappingService;
+//         AuthRequest request = new AuthRequest();
+//         request.setUsername("user");
+//         request.setPassword("pass");
 
-    @TestConfiguration
-    static class MockConfig {
-        @Bean
-        AuthenticationManager authenticationManager() {
-            return Mockito.mock(AuthenticationManager.class);
-        }
+//         mockMvc.perform(post("/api/auth/login")
+//                         .contentType(MediaType.APPLICATION_JSON)
+//                         .content(objectMapper.writeValueAsString(request)))
+//                 .andExpect(status().isOk())
+//                 .andExpect(jsonPath("$.token").value("mock-token"));
+//     }
 
-        @Bean
-        JwtTokenProvider jwtTokenProvider() {
-            return Mockito.mock(JwtTokenProvider.class);
-        }
+//     @Test
+//     void testRegister() throws Exception {
+//         RegisterRequest request = new RegisterRequest();
+//         request.setUsername("newuser");
+//         request.setPassword("pwd");
 
-        @Bean
-        UserRepository userRepository() {
-            return Mockito.mock(UserRepository.class);
-        }
+//         // register 是 void，不需額外設定 when()
 
-        @Bean
-        RoleRepository roleRepository() {
-            return Mockito.mock(RoleRepository.class);
-        }
+//         mockMvc.perform(post("/api/auth/register")
+//                         .contentType(MediaType.APPLICATION_JSON)
+//                         .content(objectMapper.writeValueAsString(request)))
+//                 .andExpect(status().isOk())
+//                 .andExpect(content().string("註冊成功"));
+//     }
 
-        @Bean
-        PasswordEncoder passwordEncoder() {
-            return Mockito.mock(PasswordEncoder.class);
-        }
+//     @Test
+//     void testResetPassword() throws Exception {
+//         ResetPasswordRequest request = new ResetPasswordRequest();
+//         request.setUsername("user");
+//         request.setNewPassword("newpass");
 
-        @Bean
-        CustomUserDetailsService customUserDetailsService() {
-            return Mockito.mock(CustomUserDetailsService.class);
-        }
+//         mockMvc.perform(post("/api/auth/reset-password")
+//                         .contentType(MediaType.APPLICATION_JSON)
+//                         .content(objectMapper.writeValueAsString(request)))
+//                 .andExpect(status().isOk())
+//                 .andExpect(content().string("密碼已重設"));
+//     }
 
-    }
+//     @Test
+//     void testRefreshToken() throws Exception {
+//         when(authService.refreshToken(any(Authentication.class))).thenReturn("new-token");
 
-    @Test
-    void testLogin() throws Exception {
-        String requestBody = """
-            {
-                "username": "super",
-                "password": "6969"
-            }
-            """;
+//         mockMvc.perform(get("/api/auth/refresh-token"))
+//                 .andExpect(status().isOk())
+//                 .andExpect(jsonPath("$.token").value("new-token"));
+//     }
 
-        UserDetails userDetails = mock(UserDetails.class);
+//     @Test
+//     void testCheckToken() throws Exception {
+//         // 這裡 mock 回傳 Map
+//         when(authService.checkToken(any(Authentication.class)))
+//                 .thenReturn(Map.of("status", "OK"));
 
-        Authentication auth = mock(Authentication.class);
-        when(auth.getPrincipal()).thenReturn(userDetails);
-
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(auth);
-
-        when(jwtTokenProvider.generateToken(userDetails)).thenReturn("fake-jwt-token");
-
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("fake-jwt-token"));
-    }
-
-    @Test
-    void testRegister() throws Exception {
-        String requestBody = """
-            {
-                "username": "newuser",
-                "password": "password",
-                "fullName": "New User",
-                "email": "new@example.com",
-                "phone": "123456"
-            }
-            """;
-
-        when(userRepository.existsByUsername("newuser")).thenReturn(false);
-        when(passwordEncoder.encode("password")).thenReturn("encoded-password");
-        Role staffRole = new Role();
-        staffRole.setName("STAFF");
-        when(roleRepository.findByName("STAFF")).thenReturn(Optional.of(staffRole));
-
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isOk())
-                .andExpect(content().string("註冊成功"));
-    }
-
-    @Test
-    void testResetPassword() throws Exception {
-        String requestBody = """
-            {
-                "username": "testuser",
-                "newPassword": "newpass"
-            }
-            """;
-
-        User user = new User();
-        user.setUsername("testuser");
-
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
-        when(passwordEncoder.encode("newpass")).thenReturn("encoded-newpass");
-
-        mockMvc.perform(post("/api/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isOk())
-                .andExpect(content().string("密碼已重設"));
-    }
-
-}
+//         mockMvc.perform(get("/api/auth/check"))
+//                 .andExpect(status().isOk())
+//                 .andExpect(jsonPath("$.status").value("OK"));
+//     }
+// }

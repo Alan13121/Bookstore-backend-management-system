@@ -43,7 +43,7 @@ public class User implements UserDetails {
     @EqualsAndHashCode.Exclude
     private Set<Role> roles = new HashSet<>();
 
-    // === 實作 UserDetails 需要的接口方法 ===
+    //  實作 UserDetails 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -54,17 +54,17 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // 如果你有額外欄位可以根據實際邏輯調整
+        return true; 
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // 同上
+        return true; 
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // 同上
+        return true; 
     }
 
     @Override

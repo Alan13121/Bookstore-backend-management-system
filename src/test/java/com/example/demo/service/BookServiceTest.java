@@ -1,34 +1,4 @@
-package com.example.demo.controller;
-
-import com.example.demo.entity.Book;
-import com.example.demo.repository.BookRepository;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.service.BookService;
-import com.example.demo.service.CustomUserDetailsService;
-import com.example.demo.service.UrlRoleMappingService;
-import com.example.demo.util.JwtTokenProvider;
-import com.example.demo.util.JwtAuthenticationFilter;
-
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+package com.example.demo.service;
 
 import com.example.demo.Dto.BookCreateRequest;
 import com.example.demo.Dto.BookDto;
@@ -169,4 +139,3 @@ class BookServiceTest {
         verify(bookRepository, never()).deleteById(1);
     }
 }
-
