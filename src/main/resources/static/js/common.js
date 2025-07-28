@@ -1,13 +1,3 @@
-// 將物件轉成格式化字串輸出
-function setOutput(content) {
-  const output = document.getElementById('output');
-  if (output) {
-    output.textContent = JSON.stringify(content, null, 2);
-  } else {
-    console.warn("無法找到 #output 元素");
-  }
-}
-
 // 回傳帶 JWT 的標頭（若有 token）
 function authHeader() {
   const token = localStorage.getItem("token");
@@ -59,41 +49,10 @@ function loadPageWithToken(urlOrOptions, maybeId) {
     .catch(err => alert(err.message));
 }
 
-// 驗證登入狀態，未登入則導回首頁
-async function checkAuthOrRedirect() {
-  try {
-    const res = await fetch('/api/auth/check', {
-      method: 'GET',
-      headers: authHeader()
-    });
-
-    if (!res.ok) throw new Error('未授權');
-
-    const data = await res.json();
-    console.log("驗證成功，登入者：", data);
-  } catch {
-    alert("未登入帳號");
-    window.location.href = '/index.html';
-  }
-}
-
-// 嘗試更新 token，失敗就回首頁
+// 嘗試更新 token，並回首頁
 async function refreshAndRedirect() {
   try {
-    const res = await fetch('/api/auth/refresh-token', {
-      method: 'GET',
-      headers: authHeader()
-    });
-
-    if (!res.ok) {
-      alert("Token 更新失敗，將直接跳轉首頁");
-      window.location.href = "/index.html";
-      return;
-    }
-
-    const data = await res.json();
-    localStorage.setItem('token', data.token);
-    console.log("Token refreshed:", data.token);
+    const res = await refreshToken();
     window.location.href = "/index.html";
   } catch (err) {
     console.error("錯誤：", err);
@@ -121,5 +80,43 @@ async function refreshToken() {
   } catch (err) {
     console.error("錯誤：", err);
     return null;
+  }
+}
+
+// 解碼 JWT，回傳 payload 物件，失敗回傳 null
+function decodeToken(token) {
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1];
+    const decoded = atob(payload);
+    return JSON.parse(decoded);
+  } catch (e) {
+    console.error("解碼 token 失敗", e);
+    return null;
+  }
+}
+
+// 檢查 JWT 是否存在且未過期
+function isTokenValid() {
+  const token = localStorage.getItem('token');
+  if (!token) return false;
+
+  const payload = decodeToken(token);
+  if (!payload) return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  // exp 大於現在時間表示有效
+  return payload.exp && payload.exp > now;
+}
+
+// 驗證登入狀態，未登入或過期則導回首頁
+function checkAuthOrRedirect() {
+  if (!isTokenValid()) {
+    // 清掉舊 token
+    localStorage.removeItem('token');
+    alert("未登入帳號");
+    window.location.href = '/index.html';
+  } else {
+    console.log("Token 有效");
   }
 }

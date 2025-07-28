@@ -71,7 +71,7 @@ public class SecurityConfig {
                 ).permitAll()
 
 
-                // 其他都需要登入（授權由 Filter 處理）/api/
+                // 其他都需要登入（授權由 Filter 處理）
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
