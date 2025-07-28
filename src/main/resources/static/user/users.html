@@ -3,7 +3,7 @@
 <head><meta charset="UTF-8"><title>👤 用戶管理</title></head>
 <body>
 <h1>👤 用戶管理</h1>
-<a href="#" onclick="refreshAndRedirect()">返回首頁</a>
+<a href="/index.html">返回首頁</a>
 
 <h3>📋 用戶列表</h3>
 <div id="user-table"></div>
@@ -27,14 +27,5 @@
 <script src="/js/users.js"></script>
 <script>
   checkAuthOrRedirect();
-  document.addEventListener('DOMContentLoaded', () => {
-    getUsers();
-
-    document.getElementById('create-user-form').addEventListener('submit', e => {
-      e.preventDefault();
-      createUser();
-    });
-  });
-
 </script>
 </body>

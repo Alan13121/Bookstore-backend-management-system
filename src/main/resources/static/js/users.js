@@ -100,3 +100,12 @@ async function createUser() {
     alert('新增失敗');
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  getUsers();
+
+  document.getElementById('create-user-form').addEventListener('submit', e => {
+    e.preventDefault();
+    createUser();
+  });
+});

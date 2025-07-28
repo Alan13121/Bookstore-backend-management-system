@@ -111,3 +111,6 @@ async function deleteBook(id) {
   }
   
 }
+document.addEventListener('DOMContentLoaded', () => {
+    getBooks();
+})
