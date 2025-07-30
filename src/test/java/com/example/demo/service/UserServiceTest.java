@@ -1,87 +1,87 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.User;
-import com.example.demo.repository.RoleRepository;
-import com.example.demo.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.example.demo.Dto.CreateUserRequest;
+import com.example.demo.Dto.UpdateUserRequest;
+import com.example.demo.Dto.UserResponse;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
+@SpringBootTest
 class UserServiceTest {
 
-    private UserRepository userRepository;
+    @Autowired
     private UserService userService;
-    private RoleRepository roleRepository;
-    private PasswordEncoder passwordEncoder;
 
-    @BeforeEach
-    void setUp() {
-        userRepository = mock(UserRepository.class);
-        userService = new UserService(userRepository, roleRepository, passwordEncoder);
+    @Test
+    public void getAllUsers(){
+        assertNotNull(userService.getAllUsers());
     }
 
     @Test
-    void testGetAllActiveUsers() {
-        // Arrange
-        User u1 = new User(); u1.setUsername("user1");
-        User u2 = new User(); u2.setUsername("user2");
-        when(userRepository.findByEnabledTrue()).thenReturn(List.of(u1, u2));
-
-        // Act
-        List<User> result = userService.getAllActiveUsers();
-
-        // Assert
-        assertEquals(2, result.size());
-        assertEquals("user1", result.get(0).getUsername());
-        assertEquals("user2", result.get(1).getUsername());
-        verify(userRepository, times(1)).findByEnabledTrue();
+    public void getUserById(){
+        UserResponse userResponse = userService.getUserById(1);
+        assertNotNull(userResponse);
+        assertEquals(1, userResponse.getId());
     }
 
     @Test
-    void testSearchUsersByUsername() {
-        // Arrange
-        String keyword = "admin";
-        User u1 = new User(); u1.setUsername("admin1");
-        when(userRepository.findByUsernameContaining(keyword)).thenReturn(List.of(u1));
+    @Transactional
+    public void createUser(){
+        CreateUserRequest request = new CreateUserRequest();
+        request.setUsername("jojo");
+        request.setPassword("5555");
+        request.setFullName("jojo jo");
+        request.setPhone("0977888999");
+        request.setEmail("jojo@gmail.com.com");
+        request.setEnabled(true);
+        request.setRoleIds(Set.of(1,2));
 
-        // Act
-        List<User> result = userService.searchUsersByUsername(keyword);
-
-        // Assert
-        assertEquals(1, result.size());
-        assertEquals("admin1", result.get(0).getUsername());
-        verify(userRepository, times(1)).findByUsernameContaining(keyword);
+        UserResponse userResponse = userService.createUser(request);
+        assertNotNull(userService.getUserById(userResponse.getId()));
+        assertEquals(request.getUsername(), userResponse.getUsername());
+        assertEquals(request.getFullName(), userResponse.getFullName());
+        assertEquals(request.getPhone(), userResponse.getPhone());
+        assertEquals(request.getEmail(), userResponse.getEmail());
+        assertEquals(request.getEnabled(), userResponse.getEnabled());
+        assertEquals(Set.of("ADMIN","STAFF"), userResponse.getRoles());
     }
 
     @Test
-    void testGetAllActiveUsersReturnsEmptyList() {
-        // Arrange
-        when(userRepository.findByEnabledTrue()).thenReturn(List.of());
+    @Transactional
+    public void updateUser(){
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setFullName("jojo jo");
+        request.setPhone("0977888999");
+        request.setEmail("jojo@gmail.com.com");
+        request.setEnabled(true);
+        request.setRoleIds(Set.of(2,3));
 
-        // Act
-        List<User> result = userService.getAllActiveUsers();
-
-        // Assert
-        assertTrue(result.isEmpty());
-        verify(userRepository, times(1)).findByEnabledTrue();
+        UserResponse userResponse = userService.updateUser(1, request);
+        assertEquals(request.getFullName(), userResponse.getFullName());
+        assertEquals(request.getPhone(), userResponse.getPhone());
+        assertEquals(request.getEmail(), userResponse.getEmail());
+        assertEquals(request.getEnabled(), userResponse.getEnabled());
+        assertEquals(Set.of("STAFF","WORKER"), userResponse.getRoles());
     }
 
     @Test
-    void testSearchUsersByUsernameReturnsEmptyList() {
-        // Arrange
-        String keyword = "notfound";
-        when(userRepository.findByUsernameContaining(keyword)).thenReturn(List.of());
-
-        // Act
-        List<User> result = userService.searchUsersByUsername(keyword);
-
-        // Assert
-        assertTrue(result.isEmpty());
-        verify(userRepository, times(1)).findByUsernameContaining(keyword);
+    @Transactional
+    public void deleteUser(){
+        assertNotNull(1);
+        userService.deleteUser(1);
+        IllegalArgumentException ex = assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.deleteUser(1) // 呼叫會丟出例外的方法
+        );
+        assertEquals("找不到用戶，ID: "+1, ex.getMessage());
     }
 }

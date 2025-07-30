@@ -1,115 +1,115 @@
-// package com.example.demo.controller;
+package com.example.demo.controller;
 
-// import com.example.demo.Dto.AuthRequest;
-// import com.example.demo.Dto.RegisterRequest;
-// import com.example.demo.Dto.ResetPasswordRequest;
-// import com.example.demo.service.AuthService;
-// import com.example.demo.util.DynamicAuthorizationFilter;
-// import com.example.demo.util.JwtTokenProvider;
-// import com.fasterxml.jackson.databind.ObjectMapper;
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-// import org.springframework.boot.test.mock.mockito.MockBean;
-// import org.springframework.context.annotation.ComponentScan;
-// import org.springframework.context.annotation.FilterType;
-// import org.springframework.http.MediaType;
-// import org.springframework.security.core.Authentication;
-// import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
-// import java.util.Map;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.Mockito.when;
-// import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-// import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
 
-// @WebMvcTest(
-//         controllers = AuthController.class,
-//         excludeFilters = {
-//                 @ComponentScan.Filter(
-//                         type = FilterType.ASSIGNABLE_TYPE,
-//                         classes = DynamicAuthorizationFilter.class // 排除這個 Filter
-//                 )
-//         }
-// )
-// class AuthControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+class AuthControllerTest {
 
-//     @Autowired
-//     private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-//     @MockBean
-//     private AuthService authService;
+    @Test
+    void login() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"admin\",\"password\":\"6969\"}");
 
-//     @MockBean
-//     private JwtTokenProvider jwtTokenProvider;
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", notNullValue()));
+    }
 
-//     @MockBean
-//     private com.example.demo.service.UrlRoleMappingService urlRoleMappingService;
+    @Test
+    @Transactional
+    void register() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"testuser\",\"password\":\"123456\",\"fullName\":\"Test User\",\"email\":\"test@example.com\",\"phone\":\"0987654321\"}");
 
-//     @Autowired
-//     private ObjectMapper objectMapper;
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("註冊成功"));
+    }
 
-//     @Test
-//     void testLogin() throws Exception {
-//         when(authService.login(any(AuthRequest.class))).thenReturn("mock-token");
+    @Test
+    @Transactional
+    void resetPassword() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/api/auth/reset-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"staff\",\"newPassword\":\"5566\"}");
 
-//         AuthRequest request = new AuthRequest();
-//         request.setUsername("user");
-//         request.setPassword("pass");
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("密碼已重設"));
+    }
 
-//         mockMvc.perform(post("/api/auth/login")
-//                         .contentType(MediaType.APPLICATION_JSON)
-//                         .content(objectMapper.writeValueAsString(request)))
-//                 .andExpect(status().isOk())
-//                 .andExpect(jsonPath("$.token").value("mock-token"));
-//     }
+    @Test
+    @WithMockUser(username = "STAFF", roles = {"STAFF"})
+    void refreshToken() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"admin\",\"password\":\"6969\"}");
 
-//     @Test
-//     void testRegister() throws Exception {
-//         RegisterRequest request = new RegisterRequest();
-//         request.setUsername("newuser");
-//         request.setPassword("pwd");
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", notNullValue()))
+                .andReturn();
 
-//         // register 是 void，不需額外設定 when()
+        // 取得回傳的 JSON 字串
+        String json = result.getResponse().getContentAsString();
 
-//         mockMvc.perform(post("/api/auth/register")
-//                         .contentType(MediaType.APPLICATION_JSON)
-//                         .content(objectMapper.writeValueAsString(request)))
-//                 .andExpect(status().isOk())
-//                 .andExpect(content().string("註冊成功"));
-//     }
+        // 用 ObjectMapper 解析
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(json);
+        String token = node.get("token").asText();
 
-//     @Test
-//     void testResetPassword() throws Exception {
-//         ResetPasswordRequest request = new ResetPasswordRequest();
-//         request.setUsername("user");
-//         request.setNewPassword("newpass");
+        requestBuilder = MockMvcRequestBuilders
+                .get("/api/auth/refresh-token")
+                .header("Authorization", "Bearer " + token);
 
-//         mockMvc.perform(post("/api/auth/reset-password")
-//                         .contentType(MediaType.APPLICATION_JSON)
-//                         .content(objectMapper.writeValueAsString(request)))
-//                 .andExpect(status().isOk())
-//                 .andExpect(content().string("密碼已重設"));
-//     }
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", notNullValue()))
+                .andReturn();
+    }
 
-//     @Test
-//     void testRefreshToken() throws Exception {
-//         when(authService.refreshToken(any(Authentication.class))).thenReturn("new-token");
+    @Test
+    @WithMockUser(username = "STAFF", roles = {"STAFF"})
+    void checkToken() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/api/auth/check");
 
-//         mockMvc.perform(get("/api/auth/refresh-token"))
-//                 .andExpect(status().isOk())
-//                 .andExpect(jsonPath("$.token").value("new-token"));
-//     }
-
-//     @Test
-//     void testCheckToken() throws Exception {
-//         // 這裡 mock 回傳 Map
-//         when(authService.checkToken(any(Authentication.class)))
-//                 .thenReturn(Map.of("status", "OK"));
-
-//         mockMvc.perform(get("/api/auth/check"))
-//                 .andExpect(status().isOk())
-//                 .andExpect(jsonPath("$.status").value("OK"));
-//     }
-// }
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+}

@@ -1,172 +1,83 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.Book;
-import com.example.demo.repository.BookRepository;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.service.BookService;
-import com.example.demo.service.CustomUserDetailsService;
-import com.example.demo.service.UrlRoleMappingService;
-import com.example.demo.util.JwtTokenProvider;
-import com.example.demo.util.JwtAuthenticationFilter;
-
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+import static org.hamcrest.Matchers.equalTo;
 
-import com.example.demo.Dto.BookCreateRequest;
-import com.example.demo.Dto.BookDto;
-import com.example.demo.Dto.BookUpdateRequest;
-import com.example.demo.entity.Book;
-import com.example.demo.repository.BookRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+@SpringBootTest
+@AutoConfigureMockMvc
+@WithMockUser(username = "STAFF", roles = {"STAFF"})
+class BookControllerTest {
 
-import java.util.List;
-import java.util.Optional;
+    @Autowired
+    private MockMvc mockMvc;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+    @Test
+    public void getAll() throws Exception{
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/api/books");
 
-@ExtendWith(MockitoExtension.class)
-class BookServiceTest {
-
-    @Mock
-    private BookRepository bookRepository; // 模擬 Repository
-
-    @InjectMocks
-    private BookService bookService; // 測試目標
-
-    private Book book;
-
-    @BeforeEach
-    void setUp() {
-        book = new Book();
-        book.setId(1);
-        book.setTitle("Spring Boot 入門");
-        book.setAuthor("John");
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
     @Test
-    void getAllBooks_shouldReturnListOfBooks() {
-        when(bookRepository.findAll()).thenReturn(List.of(book));
+    void getOne() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/api/books/{id}",1);
 
-        List<BookDto> result = bookService.getAllBooks();
-
-        assertEquals(1, result.size());
-        assertEquals("Spring Boot 入門", result.get(0).getTitle());
-        verify(bookRepository).findAll();
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", equalTo(1)));
     }
 
     @Test
-    void getBookById_shouldReturnBookDtoIfFound() {
-        when(bookRepository.findById(1)).thenReturn(Optional.of(book));
+    @Transactional
+    void create() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/api/books",1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\":\"Spring Boot in Action\",\"author\":\"Craig Walls\",\"description\":\"good book\",\"listPrice\":399.00,\"salePrice\":100.00}");
 
-        Optional<BookDto> result = bookService.getBookById(1);
-
-        assertTrue(result.isPresent());
-        assertEquals("Spring Boot 入門", result.get().getTitle());
-        verify(bookRepository).findById(1);
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title", equalTo("Spring Boot in Action")));
     }
 
     @Test
-    void getBookById_shouldReturnEmptyIfNotFound() {
-        when(bookRepository.findById(1)).thenReturn(Optional.empty());
-
-        Optional<BookDto> result = bookService.getBookById(1);
-
-        assertTrue(result.isEmpty());
-        verify(bookRepository).findById(1);
+    @Transactional
+    void delete() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .delete("/api/books/{id}",1);
+        
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().is(204));
     }
 
     @Test
-    void createBook_shouldSaveAndReturnBookDto() {
-        BookCreateRequest request = new BookCreateRequest();
-        request.setTitle("Spring Boot 入門");
-        request.setAuthor("John");
+    @Transactional
+    void update() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"id\":1,\"title\":\"jojo ola ola ola ola\"}");
 
-        when(bookRepository.save(any(Book.class))).thenReturn(book);
-
-        BookDto result = bookService.createBook(request);
-
-        assertNotNull(result);
-        assertEquals("Spring Boot 入門", result.getTitle());
-        verify(bookRepository).save(any(Book.class));
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title", equalTo("jojo ola ola ola ola")));
     }
 
-    @Test
-    void updateBook_shouldUpdateAndReturnBookDtoIfFound() {
-        BookUpdateRequest request = new BookUpdateRequest();
-        request.setId(1);
-        request.setTitle("Updated Title");
-        request.setAuthor("John");
-
-        when(bookRepository.findById(1)).thenReturn(Optional.of(book));
-        when(bookRepository.save(any(Book.class))).thenReturn(book);
-
-        Optional<BookDto> result = bookService.updateBook(request);
-
-        assertTrue(result.isPresent());
-        verify(bookRepository).findById(1);
-        verify(bookRepository).save(any(Book.class));
-    }
-
-    @Test
-    void updateBook_shouldReturnEmptyIfBookNotFound() {
-        BookUpdateRequest request = new BookUpdateRequest();
-        request.setId(1);
-        request.setTitle("Updated Title");
-        request.setAuthor("John");
-
-        when(bookRepository.findById(1)).thenReturn(Optional.empty());
-
-        Optional<BookDto> result = bookService.updateBook(request);
-
-        assertTrue(result.isEmpty());
-        verify(bookRepository).findById(1);
-        verify(bookRepository, never()).save(any(Book.class));
-    }
-
-    @Test
-    void deleteBook_shouldDeleteAndReturnTrueIfExists() {
-        when(bookRepository.existsById(1)).thenReturn(true);
-
-        boolean result = bookService.deleteBook(1);
-
-        assertTrue(result);
-        verify(bookRepository).existsById(1);
-        verify(bookRepository).deleteById(1);
-    }
-
-    @Test
-    void deleteBook_shouldReturnFalseIfNotExists() {
-        when(bookRepository.existsById(1)).thenReturn(false);
-
-        boolean result = bookService.deleteBook(1);
-
-        assertFalse(result);
-        verify(bookRepository).existsById(1);
-        verify(bookRepository, never()).deleteById(1);
-    }
 }
 

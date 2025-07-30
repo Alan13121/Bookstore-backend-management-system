@@ -1,141 +1,89 @@
 package com.example.demo.service;
 
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.demo.Dto.BookCreateRequest;
 import com.example.demo.Dto.BookDto;
 import com.example.demo.Dto.BookUpdateRequest;
-import com.example.demo.entity.Book;
-import com.example.demo.repository.BookRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class BookServiceTest {
+@SpringBootTest
+public class BookServiceTest {
 
-    @Mock
-    private BookRepository bookRepository; // 模擬 Repository
+    @Autowired
+    private BookService bookService;
 
-    @InjectMocks
-    private BookService bookService; // 測試目標
-
-    private Book book;
-
-    @BeforeEach
-    void setUp() {
-        book = new Book();
-        book.setId(1);
-        book.setTitle("Spring Boot 入門");
-        book.setAuthor("John");
+    @Test
+    public void getAllBooks(){
+        assertNotNull(bookService.getAllBooks());
     }
 
     @Test
-    void getAllBooks_shouldReturnListOfBooks() {
-        when(bookRepository.findAll()).thenReturn(List.of(book));
-
-        List<BookDto> result = bookService.getAllBooks();
-
-        assertEquals(1, result.size());
-        assertEquals("Spring Boot 入門", result.get(0).getTitle());
-        verify(bookRepository).findAll();
+    public void getBookById(){
+        Optional<BookDto> book = bookService.getBookById(1);
+        assertNotNull(book);
+        BookDto b = book.get();
+        assertEquals(1, b.getId());
     }
 
     @Test
-    void getBookById_shouldReturnBookDtoIfFound() {
-        when(bookRepository.findById(1)).thenReturn(Optional.of(book));
-
-        Optional<BookDto> result = bookService.getBookById(1);
-
-        assertTrue(result.isPresent());
-        assertEquals("Spring Boot 入門", result.get().getTitle());
-        verify(bookRepository).findById(1);
-    }
-
-    @Test
-    void getBookById_shouldReturnEmptyIfNotFound() {
-        when(bookRepository.findById(1)).thenReturn(Optional.empty());
-
-        Optional<BookDto> result = bookService.getBookById(1);
-
-        assertTrue(result.isEmpty());
-        verify(bookRepository).findById(1);
-    }
-
-    @Test
-    void createBook_shouldSaveAndReturnBookDto() {
+    @Transactional
+    public void createBook(){
         BookCreateRequest request = new BookCreateRequest();
-        request.setTitle("Spring Boot 入門");
-        request.setAuthor("John");
-
-        when(bookRepository.save(any(Book.class))).thenReturn(book);
-
-        BookDto result = bookService.createBook(request);
-
-        assertNotNull(result);
-        assertEquals("Spring Boot 入門", result.getTitle());
-        verify(bookRepository).save(any(Book.class));
+        request.setTitle("jojo");
+        request.setAuthor("荒木老頭");
+        request.setDescription("歐拉");
+        request.setSalePrice(new BigDecimal("888"));
+        request.setListPrice(new BigDecimal("777"));
+        
+        BookDto b = bookService.createBook(request);
+        assertNotNull(bookService.getBookById(b.getId()));
+        assertEquals("jojo", b.getTitle());
+        assertEquals("荒木老頭", b.getAuthor());
+        assertEquals("歐拉", b.getDescription());
+        assertEquals(0, b.getSalePrice().compareTo(new BigDecimal("888")));
+        assertEquals(0, b.getListPrice().compareTo(new BigDecimal("777")));
     }
 
     @Test
-    void updateBook_shouldUpdateAndReturnBookDtoIfFound() {
+    @Transactional
+    public void updateBook(){
         BookUpdateRequest request = new BookUpdateRequest();
         request.setId(1);
-        request.setTitle("Updated Title");
-        request.setAuthor("John");
+        request.setTitle("jojo");
+        request.setAuthor("荒木老頭");
+        request.setDescription("歐拉");
+        request.setSalePrice(new BigDecimal("888"));
+        request.setListPrice(new BigDecimal("777"));
+        BookDto b = bookService.updateBook(request).get();
 
-        when(bookRepository.findById(1)).thenReturn(Optional.of(book));
-        when(bookRepository.save(any(Book.class))).thenReturn(book);
-
-        Optional<BookDto> result = bookService.updateBook(request);
-
-        assertTrue(result.isPresent());
-        verify(bookRepository).findById(1);
-        verify(bookRepository).save(any(Book.class));
+        assertNotNull(bookService.getBookById(b.getId()));
+        assertEquals("jojo", b.getTitle());
+        assertEquals("荒木老頭", b.getAuthor());
+        assertEquals("歐拉", b.getDescription());
+        assertEquals(0, b.getSalePrice().compareTo(new BigDecimal("888")));
+        assertEquals(0, b.getListPrice().compareTo(new BigDecimal("777")));
+    
     }
 
     @Test
-    void updateBook_shouldReturnEmptyIfBookNotFound() {
-        BookUpdateRequest request = new BookUpdateRequest();
-        request.setId(1);
-        request.setTitle("Updated Title");
-        request.setAuthor("John");
-
-        when(bookRepository.findById(1)).thenReturn(Optional.empty());
-
-        Optional<BookDto> result = bookService.updateBook(request);
-
-        assertTrue(result.isEmpty());
-        verify(bookRepository).findById(1);
-        verify(bookRepository, never()).save(any(Book.class));
+    @Transactional
+    public void deleteBook(){
+        assertTrue(bookService.deleteBook(1));
+        assertFalse(bookService.deleteBook(1));
     }
 
-    @Test
-    void deleteBook_shouldDeleteAndReturnTrueIfExists() {
-        when(bookRepository.existsById(1)).thenReturn(true);
-
-        boolean result = bookService.deleteBook(1);
-
-        assertTrue(result);
-        verify(bookRepository).existsById(1);
-        verify(bookRepository).deleteById(1);
-    }
-
-    @Test
-    void deleteBook_shouldReturnFalseIfNotExists() {
-        when(bookRepository.existsById(1)).thenReturn(false);
-
-        boolean result = bookService.deleteBook(1);
-
-        assertFalse(result);
-        verify(bookRepository).existsById(1);
-        verify(bookRepository, never()).deleteById(1);
-    }
 }
