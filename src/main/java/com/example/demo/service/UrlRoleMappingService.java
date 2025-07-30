@@ -11,17 +11,17 @@ import java.util.List;
 @Service
 public class UrlRoleMappingService {
     @Autowired
-    private UrlRoleMappingRepository repository;
+    private UrlRoleMappingRepository urlRoleMappingRepository;
 
     public List<UrlRoleMapping> getAll() {
-        return repository.findAll();
+        return urlRoleMappingRepository.findAll();
     }
 
     public UrlRoleMapping save(UrlRoleMapping mapping) {
-        return repository.save(mapping);
+        return urlRoleMappingRepository.save(mapping);
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        urlRoleMappingRepository.deleteById(id);
     }
 }

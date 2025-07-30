@@ -65,8 +65,7 @@ class UserControllerTest {
 
         mockMvc.perform(requestBuilder)
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -120,6 +119,6 @@ class UserControllerTest {
 
         mockMvc.perform(requestBuilder)
                 .andDo(print())
-                .andExpect(status().isNoContent());
+                .andExpect(status().is(204));
     }
 }

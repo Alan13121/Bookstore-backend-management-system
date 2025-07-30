@@ -70,7 +70,7 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response); // 交給下一個 filter 直到執行完
     }
 
     // 檢查是否為白名單路徑
