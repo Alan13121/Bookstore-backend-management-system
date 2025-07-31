@@ -1,0 +1,45 @@
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS url_role_mapping;
+
+CREATE TABLE books (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255),
+  author VARCHAR(255),
+  description TEXT,
+  list_price DECIMAL(38,2),
+  sale_price DECIMAL(38,2),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(255) UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  full_name VARCHAR(255),
+  phone VARCHAR(255),
+  email VARCHAR(255),
+  enabled BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE roles (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) UNIQUE
+);
+
+CREATE TABLE user_roles (
+  user_id INT NOT NULL,
+  role_id INT NOT NULL,
+  PRIMARY KEY (user_id, role_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+);
+
+CREATE TABLE url_role_mapping (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  url_pattern VARCHAR(255) NOT NULL,
+  roles VARCHAR(255) NOT NULL
+);
