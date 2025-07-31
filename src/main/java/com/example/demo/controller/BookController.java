@@ -46,10 +46,12 @@ public class BookController {
         return bookService.createBook(request);
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     @Operation(summary = "更新一本書")
-    public ResponseEntity<BookDto> update(@RequestBody BookUpdateRequest request) {
-        return bookService.updateBook(request)
+    public ResponseEntity<BookDto> update(
+            @PathVariable Integer id,
+            @RequestBody BookUpdateRequest request) {
+        return bookService.updateBook(id,request)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

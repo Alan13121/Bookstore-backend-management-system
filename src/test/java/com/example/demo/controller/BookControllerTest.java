@@ -70,9 +70,9 @@ class BookControllerTest {
     @Transactional
     void update() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .put("/api/books")
+                .put("/api/books/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"id\":1,\"title\":\"jojo ola ola ola ola\"}");
+                .content("{\"title\":\"jojo ola ola ola ola\"}");
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())

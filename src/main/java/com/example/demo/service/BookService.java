@@ -53,8 +53,8 @@ public class BookService {
         return toDto(bookRepository.save(book));
     }
 
-    public Optional<BookDto> updateBook(BookUpdateRequest request) {
-        return bookRepository.findById(request.getId()).map(b -> {
+    public Optional<BookDto> updateBook(Integer id,BookUpdateRequest request) {
+        return bookRepository.findById(id).map(b -> {
             b.setTitle(request.getTitle());
             b.setAuthor(request.getAuthor());
             b.setDescription(request.getDescription());

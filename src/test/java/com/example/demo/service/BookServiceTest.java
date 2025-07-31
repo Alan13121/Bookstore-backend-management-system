@@ -18,8 +18,6 @@ import com.example.demo.Dto.BookCreateRequest;
 import com.example.demo.Dto.BookDto;
 import com.example.demo.Dto.BookUpdateRequest;
 
-
-
 @SpringBootTest
 public class BookServiceTest {
 
@@ -62,13 +60,12 @@ public class BookServiceTest {
     @Transactional
     public void updateBook(){
         BookUpdateRequest request = new BookUpdateRequest();
-        request.setId(1);
         request.setTitle("jojo");
         request.setAuthor("荒木老頭");
         request.setDescription("歐拉");
         request.setSalePrice(new BigDecimal("888"));
         request.setListPrice(new BigDecimal("777"));
-        BookDto b = bookService.updateBook(request).get();
+        BookDto b = bookService.updateBook(1,request).get();
 
         assertNotNull(bookService.getBookById(b.getId()));
         assertEquals("jojo", b.getTitle());
