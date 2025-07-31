@@ -76,7 +76,6 @@ class UserServiceTest {
     @Test
     @Transactional
     public void deleteUser(){
-        assertNotNull(1);
         userService.deleteUser(1);
         IllegalArgumentException ex = assertThrows(
             IllegalArgumentException.class,

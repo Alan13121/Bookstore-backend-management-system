@@ -53,8 +53,12 @@ public class RoleService {
             .orElseThrow(() -> new RuntimeException("Role not found with id " + id));
     }
 
-    public void deleteRole(Integer id) {
-        roleRepository.deleteById(id);
+    public boolean deleteRole(Integer id) {
+        if (roleRepository.existsById(id)) {
+            roleRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
     public ResponseEntity<RoleDto> findRoleResponse(Integer id) {

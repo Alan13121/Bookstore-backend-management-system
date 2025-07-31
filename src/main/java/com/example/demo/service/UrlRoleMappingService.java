@@ -21,7 +21,11 @@ public class UrlRoleMappingService {
         return urlRoleMappingRepository.save(mapping);
     }
 
-    public void delete(Long id) {
-        urlRoleMappingRepository.deleteById(id);
+    public boolean delete(Long id) {
+        if (urlRoleMappingRepository.existsById(id)) {
+            urlRoleMappingRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
