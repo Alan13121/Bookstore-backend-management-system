@@ -70,7 +70,6 @@ class AuthControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "STAFF", roles = {"STAFF"})
     void refreshToken() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .post("/api/auth/login")

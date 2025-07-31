@@ -48,7 +48,8 @@ public class AuthService {
                         request.getPassword()
                 ));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        //通行證存入後台 方便已登入用戶 用身分存取權限白名單的功能 refreshToken 好像用不到?
+        //SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return jwtTokenProvider.generateToken((UserDetails) authentication.getPrincipal());
     }

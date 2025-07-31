@@ -45,21 +45,29 @@ cd bookshop
 ```properties
 spring.application.name=demo
 
-# 資料庫連線資訊
+#指定資料庫密碼與diver
 spring.datasource.username=root
 spring.datasource.password=root
 spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
-spring.datasource.url=jdbc:mariadb://localhost:3300/bookshop
-# spring.datasource.url=jdbc:mariadb://mariadb:3306/bookshop  # Docker 用
 
-# JPA 設定
+#在終端顯示hibernate產生的SQL指令
 spring.jpa.show-sql=true
-spring.jpa.hibernate.ddl-auto=none
+
+#用data、schema初始化資料庫
 spring.sql.init.mode=always
 
-# JWT 設定
+#不靠JPA初始化
+spring.jpa.hibernate.ddl-auto=none 
+
+# JWT Token參數
 jwt.secret=LyBGqP6T2B1q5m2jWj9KoP6x3F4Xk9R4p3WvZ5vL6Q8bY7R2e5S6c1G2x3N4t5Z6
 jwt.expiration-ms=86400000
+
+# 本地啟動
+# spring.datasource.url=jdbc:mariadb://localhost:3300/bookshop
+
+# docker啟動
+spring.datasource.url=jdbc:mariadb://mariadb:3306/bookshop
 ```
 
 ---

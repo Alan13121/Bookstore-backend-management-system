@@ -1,7 +1,5 @@
 package com.example.demo.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -109,6 +107,21 @@ class UserControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.fullName", equalTo("Updated Name")));
+    }
+
+    @Test 
+    @Transactional
+    void updateUser_notFound() throws Exception {
+        String jsonBody = "{ \"fullName\": \"No User\", \"email\": \"nouser@example.com\", \"phone\": \"0000000000\" }";
+
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/api/users/{id}", 9999)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonBody);
+
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     @Test
