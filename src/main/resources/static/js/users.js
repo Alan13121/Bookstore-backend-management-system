@@ -2,7 +2,6 @@ async function getUsers() {
   const res = await fetch('/api/users', { headers: authHeader() });
   if (!res.ok) {
     alert("載入用戶失敗");
-    return;
   }
   const data = await res.json();
   renderUserTable(data);

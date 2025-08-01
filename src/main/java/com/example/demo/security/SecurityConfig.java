@@ -42,38 +42,13 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
+            //停用CSRF
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                // 登入、swagger、健康檢查開放
-                 .requestMatchers(
-                        "/auth/*.html", 
-                        "/api/auth/**", 
-                        "/swagger-ui/**", 
-                        "/v3/api-docs/**", 
-                        "/actuator/**",
-                        "/favicon.ico"
-                ).permitAll()
-
-                // 靜態資源、網頁 html 開放
-                .requestMatchers(
-                        "/", 
-                        "/static/**", 
-                        "/js/**", 
-                        "/css/**", 
-                        "/*.html",
-                        "/user/**",        
-                        "/book/**",        
-                        "/auth/**",        
-                        "/a_office/**",   
-                        "/b_office/**",
-                        "/c_office/**"
-                ).permitAll()
-
-
-                // 其他都需要登入（授權由 Filter 處理）
-                .anyRequest().authenticated()
+                //這裡不用內建的過濾器 直接都交給 dynamicAuthorizationFilter 處理規則
+                .anyRequest().permitAll()
             )
+            //無狀態
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
