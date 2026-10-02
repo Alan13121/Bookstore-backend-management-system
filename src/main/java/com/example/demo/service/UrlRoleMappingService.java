@@ -1,17 +1,19 @@
 package com.example.demo.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.UrlRoleMapping;
 import com.example.demo.repository.UrlRoleMappingRepository;
 
-import java.util.List;
-
 @Service
 public class UrlRoleMappingService {
-    @Autowired
-    private UrlRoleMappingRepository urlRoleMappingRepository;
+    private final UrlRoleMappingRepository urlRoleMappingRepository;
+
+    public UrlRoleMappingService(UrlRoleMappingRepository urlRoleMappingRepository) {
+        this.urlRoleMappingRepository = urlRoleMappingRepository;
+    }
 
     public List<UrlRoleMapping> getAll() {
         return urlRoleMappingRepository.findAll();

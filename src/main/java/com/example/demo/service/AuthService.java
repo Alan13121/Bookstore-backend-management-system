@@ -1,24 +1,25 @@
 package com.example.demo.service;
 
-import com.example.demo.Dto.AuthRequest;
-import com.example.demo.Dto.RegisterRequest;
-import com.example.demo.Dto.ResetPasswordRequest;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.AuthRequest;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.ResetPasswordRequest;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.util.JwtTokenProvider;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 @Service
 public class AuthService {
@@ -53,7 +54,7 @@ public class AuthService {
 
     public void register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("用戶名已存在");
+            throw new IllegalStateException("用戶名已存在");
         }
 
         User user = new User();
@@ -73,7 +74,7 @@ public class AuthService {
 
     public void resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("用戶不存在"));
+                .orElseThrow(() -> new IllegalArgumentException("用戶不存在"));
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
@@ -81,7 +82,7 @@ public class AuthService {
 
     public String refreshToken(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("未登入");
+            throw new AuthenticationCredentialsNotFoundException("未登入");
         }
 
         User user = (User) authentication.getPrincipal();
@@ -90,7 +91,7 @@ public class AuthService {
 
     public Map<String, Object> checkToken(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthorized");
+            throw new AuthenticationCredentialsNotFoundException("未登入");
         }
 
         Map<String, Object> response = new HashMap<>();

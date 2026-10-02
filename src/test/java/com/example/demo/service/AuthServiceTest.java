@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +16,14 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.Dto.AuthRequest;
-import com.example.demo.Dto.RegisterRequest;
-import com.example.demo.Dto.ResetPasswordRequest;
+import com.example.demo.dto.AuthRequest;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.ResetPasswordRequest;
 import com.example.demo.entity.User;
 import com.example.demo.util.JwtTokenProvider;
 
 @SpringBootTest
-public class AuthServiceTest {
+class AuthServiceTest {
 
     @Autowired
     AuthService authService;
@@ -36,7 +35,7 @@ public class AuthServiceTest {
     JwtTokenProvider jwtTokenProvider;
 
     @Test
-    public void login(){
+    void login() {
         AuthRequest request = new AuthRequest();
         request.setUsername("admin");
         request.setPassword("6969");
@@ -44,12 +43,12 @@ public class AuthServiceTest {
         String token = authService.login(request);
         assertTrue(jwtTokenProvider.validateToken(token));
         assertEquals(request.getUsername(), jwtTokenProvider.getUsernameFromToken(token));
-        
+
     }
 
     @Test
     @Transactional
-    public void register() {
+    void register() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("newuser");
         req.setPassword("123456");
@@ -66,7 +65,7 @@ public class AuthServiceTest {
 
     @Test
     @Transactional
-    public void resetPassword() {
+    void resetPassword() {
         ResetPasswordRequest resetReq = new ResetPasswordRequest();
         resetReq.setUsername("admin");
         resetReq.setNewPassword("222222");
@@ -75,13 +74,13 @@ public class AuthServiceTest {
 
         assertDoesNotThrow(() -> {
             User u = userService.searchUsersByUsername("admin").get(0);
-            //密碼會加密 無法直接比對
+            // 密碼會加密 無法直接比對
             assertNotNull(u.getPassword());
         });
     }
 
     @Test
-    public void refreshToken() {
+    void refreshToken() {
         // 模擬一個已驗證的使用者
         User user = userService.searchUsersByUsername("admin").get(0);
         Authentication authentication = new TestingAuthenticationToken(user, null, "ROLE_ADMIN");
@@ -93,7 +92,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void checkToken() {
+    void checkToken() {
         User user = userService.searchUsersByUsername("admin").get(0);
         Authentication authentication = new TestingAuthenticationToken(user, null, "ROLE_ADMIN");
         authentication.setAuthenticated(true);

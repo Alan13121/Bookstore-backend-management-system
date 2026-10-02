@@ -1,5 +1,9 @@
 package com.example.demo.controller;
 
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -10,10 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -109,9 +109,9 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.fullName", equalTo("Updated Name")));
     }
 
-    @Test 
+    @Test
     @Transactional
-    void updateUser_notFound() throws Exception {
+    void updateUserNotFound() throws Exception {
         String jsonBody = "{ \"fullName\": \"No User\", \"email\": \"nouser@example.com\", \"phone\": \"0000000000\" }";
 
         RequestBuilder requestBuilder = MockMvcRequestBuilders

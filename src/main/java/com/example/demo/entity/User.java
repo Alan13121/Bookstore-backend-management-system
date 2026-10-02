@@ -1,15 +1,17 @@
 package com.example.demo.entity;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import jakarta.persistence.*;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Data
 @Entity
@@ -43,7 +45,7 @@ public class User implements UserDetails {
     @EqualsAndHashCode.Exclude
     private Set<Role> roles = new HashSet<>();
 
-    //  實作 UserDetails 
+    //  實作 UserDetails
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -54,17 +56,17 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; 
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; 
+        return true;
     }
 
     @Override

@@ -1,18 +1,20 @@
 package com.example.demo.controller;
 
-import com.example.demo.Dto.CreateUserRequest;
-import com.example.demo.Dto.UpdateUserRequest;
-import com.example.demo.Dto.UserResponse;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.dto.CreateUserRequest;
+import com.example.demo.dto.UpdateUserRequest;
+import com.example.demo.dto.UserResponse;
 import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
@@ -40,13 +42,9 @@ public class UserController {
 
     @Operation(summary = "取得用戶的角色字串")
     @GetMapping("/{id}/roles")
-    public ResponseEntity<String> getRolesByIdToString(
+    public String getRolesByIdToString(
             @Parameter(description = "用戶ID") @PathVariable Integer id) {
-        try {
-            return ResponseEntity.ok(userService.getRolesByIdToString(id));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return userService.getRolesByIdToString(id);
     }
 
     @Operation(summary = "查詢所有用戶")
@@ -57,42 +55,30 @@ public class UserController {
 
     @Operation(summary = "查詢單個用戶")
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(
+    public UserResponse getUserById(
             @Parameter(description = "用戶ID") @PathVariable Integer id) {
-        try {
-            return ResponseEntity.ok(userService.getUserById(id));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return userService.getUserById(id);
     }
 
     @Operation(summary = "新增用戶")
     @PostMapping
-    public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserRequest request) {
-        return ResponseEntity.ok(userService.createUser(request));
+    public UserResponse createUser(@RequestBody CreateUserRequest request) {
+        return userService.createUser(request);
     }
 
     @Operation(summary = "更新用戶資料")
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(
+    public UserResponse updateUser(
             @PathVariable Integer id,
             @RequestBody UpdateUserRequest request) {
-        try {
-            return ResponseEntity.ok(userService.updateUser(id, request));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return userService.updateUser(id, request);
     }
 
     @Operation(summary = "刪除用戶")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @Parameter(description = "用戶ID") @PathVariable Integer id) {
-        try {
-            userService.deleteUser(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }

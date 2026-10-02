@@ -1,7 +1,8 @@
 async function getUsers() {
   const res = await fetch('/api/users', { headers: authHeader() });
   if (!res.ok) {
-    alert("載入用戶失敗");
+    alert('載入用戶失敗');
+    return;
   }
   const data = await res.json();
   renderUserTable(data);
@@ -27,14 +28,14 @@ function renderUserTable(users) {
       </tr>
   `;
 
-  users.forEach(user => {
+  users.forEach((user) => {
     html += `
       <tr>
-        <td>${user.id}</td>
-        <td>${user.username}</td>
-        <td>${user.fullName ?? ''}</td>
-        <td>${user.phone ?? ''}</td>
-        <td>${user.email ?? ''}</td>
+        <td>${escapeHtml(user.id)}</td>
+        <td>${escapeHtml(user.username)}</td>
+        <td>${escapeHtml(user.fullName)}</td>
+        <td>${escapeHtml(user.phone)}</td>
+        <td>${escapeHtml(user.email)}</td>
         <td>
           <a href="#" class="delete-user" data-id="${user.id}">刪除</a> 
           <a href="user.html?id=${user.id}" class="update-user">更改</a>
@@ -46,7 +47,7 @@ function renderUserTable(users) {
   container.innerHTML = html;
 
   // 綁定刪除按鈕
-  container.querySelectorAll('.delete-user').forEach(btn => {
+  container.querySelectorAll('.delete-user').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       const id = btn.dataset.id;
@@ -60,7 +61,8 @@ async function deleteUser(id) {
   if (!confirm(`確定要刪除用戶 ${id} 嗎?`)) return;
 
   const res = await fetch(`/api/users/${id}`, {
-    method: 'DELETE', headers: authHeader()
+    method: 'DELETE',
+    headers: authHeader(),
   });
 
   if (res.status === 204) {
@@ -71,7 +73,7 @@ async function deleteUser(id) {
   }
 }
 
-//新增用戶
+// 新增用戶
 async function createUser() {
   const user = {
     username: document.getElementById('new-username').value,
@@ -80,16 +82,13 @@ async function createUser() {
     phone: document.getElementById('new-phone').value,
     email: document.getElementById('new-email').value,
     enabled: document.getElementById('new-enabled').value === 'true',
-    roleIds: document.getElementById('new-roles').value
-      .split(',')
-      .map(Number)
-      .filter(Boolean)
+    roleIds: document.getElementById('new-roles').value.split(',').map(Number).filter(Boolean),
   };
 
   const res = await fetch('/api/users', {
     method: 'POST',
     headers: authHeader(),
-    body: JSON.stringify(user)
+    body: JSON.stringify(user),
   });
 
   if (res.ok) {
@@ -103,7 +102,7 @@ async function createUser() {
 document.addEventListener('DOMContentLoaded', () => {
   getUsers();
 
-  document.getElementById('create-user-form').addEventListener('submit', e => {
+  document.getElementById('create-user-form').addEventListener('submit', (e) => {
     e.preventDefault();
     createUser();
   });

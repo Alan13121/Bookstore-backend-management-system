@@ -1,38 +1,43 @@
 package com.example.demo.util;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import com.example.demo.entity.UrlRoleMapping;
-import com.example.demo.service.UrlRoleMappingService;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import com.example.demo.entity.UrlRoleMapping;
+import com.example.demo.service.UrlRoleMappingService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private UrlRoleMappingService mappingService;
+    private final UrlRoleMappingService mappingService;
+
+    public DynamicAuthorizationFilter(UrlRoleMappingService mappingService) {
+        this.mappingService = mappingService;
+    }
 
     // 白名單 URL
     private static final List<String> WHITELIST = List.of(
         "/api/roles/mappings/public",
         "/favicon.ico"
     );
-    
+
     private static final List<String> STARTS_WITH = List.of(
-        "/static/", "/js/", "/css/", "/api/auth/", 
+        "/static/", "/js/", "/css/", "/api/auth/",
         "/v3/api-docs/", "/actuator/", "/swagger-ui/"
     );
 
@@ -47,11 +52,11 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        
-        System.out.println("[DEBUG] DynamicAuthorizationFilter triggered ");
+
+        log.debug("動態授權檢查: {}", uri);
         // 在白名單的都不用比對 直接批准
         if (isWhitelisted(uri)) {
-            filterChain.doFilter(request, response);//交給下個filter
+            filterChain.doFilter(request, response); // 交給下個filter
             return;
         }
 
@@ -59,7 +64,7 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
         List<UrlRoleMapping> mappings = mappingService.getAll();
 
         for (UrlRoleMapping mapping : mappings) {
-            String rawPattern = mapping.getUrlPattern(); 
+            String rawPattern = mapping.getUrlPattern();
             String[] requiredRoles = mapping.getRoles().split(",");
 
             if (matchWithExtension(uri, rawPattern)) {
@@ -67,11 +72,11 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
                 if (auth == null || auth.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
-                        .peek(r -> System.out.println("[DEBUG] before replace: " + r))  // debug 印出 r
                         .map(r -> r.replace("ROLE_", "")) // 去掉前綴 ROLE_
                         .noneMatch(role -> Arrays.asList(requiredRoles).contains(role))) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write("Forbidden: insufficient role");
+                    response.setContentType("text/plain;charset=UTF-8");
+                    response.getWriter().write("權限不足");
                     return;
                 }
             }

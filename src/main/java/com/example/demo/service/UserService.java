@@ -1,18 +1,19 @@
 package com.example.demo.service;
 
-import com.example.demo.Dto.CreateUserRequest;
-import com.example.demo.Dto.UpdateUserRequest;
-import com.example.demo.Dto.UserResponse;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.CreateUserRequest;
+import com.example.demo.dto.UpdateUserRequest;
+import com.example.demo.dto.UserResponse;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -30,17 +31,17 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // 查詢所有啟用的用戶 
+    // 查詢所有啟用的用戶
     public List<User> getAllActiveUsers() {
         return userRepository.findByEnabledTrue();
     }
 
-    // 依使用者名稱模糊查詢 
+    // 依使用者名稱模糊查詢
     public List<User> searchUsersByUsername(String keyword) {
         return userRepository.findByUsernameContaining(keyword);
     }
 
-    // 取得使用者的角色(字串) 
+    // 取得使用者的角色(字串)
     public String getRolesByIdToString(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("找不到用戶，ID: " + id));

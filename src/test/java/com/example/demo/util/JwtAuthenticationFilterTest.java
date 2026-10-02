@@ -1,10 +1,16 @@
 package com.example.demo.util;
 
-import com.example.demo.service.CustomUserDetailsService;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.util.Collections;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -12,11 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.IOException;
-import java.util.Collections;
-
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+import com.example.demo.service.CustomUserDetailsService;
 
 class JwtAuthenticationFilterTest {
 
@@ -45,7 +47,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void shouldSetAuthenticationIfValidTokenProvided() throws ServletException, IOException {
+    void setsAuthenticationForValidToken() throws ServletException, IOException {
         String token = "valid.jwt.token";
         String username = "testuser";
         String header = "Bearer " + token;
@@ -66,7 +68,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void shouldNotSetAuthenticationIfInvalidToken() throws ServletException, IOException {
+    void skipsAuthenticationForInvalidToken() throws ServletException, IOException {
         String token = "invalid.jwt.token";
         String header = "Bearer " + token;
 
@@ -80,7 +82,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void shouldNotSetAuthenticationIfNoAuthorizationHeader() throws ServletException, IOException {
+    void skipsAuthenticationWithoutHeader() throws ServletException, IOException {
         when(request.getHeader("Authorization")).thenReturn(null);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);

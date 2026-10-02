@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import java.math.BigDecimal;
 
 import jakarta.persistence.*;
+
 import lombok.Data;
 
 @Data
@@ -28,4 +29,3 @@ public class Book {
 
 
 }
-

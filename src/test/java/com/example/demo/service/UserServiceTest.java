@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.Dto.CreateUserRequest;
-import com.example.demo.Dto.UpdateUserRequest;
-import com.example.demo.Dto.UserResponse;
+import com.example.demo.dto.CreateUserRequest;
+import com.example.demo.dto.UpdateUserRequest;
+import com.example.demo.dto.UserResponse;
 
 @SpringBootTest
 class UserServiceTest {
@@ -22,12 +22,12 @@ class UserServiceTest {
     private UserService userService;
 
     @Test
-    public void getAllUsers(){
+    void getAllUsers() {
         assertNotNull(userService.getAllUsers());
     }
 
     @Test
-    public void getUserById(){
+    void getUserById() {
         UserResponse userResponse = userService.getUserById(1);
         assertNotNull(userResponse);
         assertEquals(1, userResponse.getId());
@@ -35,7 +35,7 @@ class UserServiceTest {
 
     @Test
     @Transactional
-    public void createUser(){
+    void createUser() {
         CreateUserRequest request = new CreateUserRequest();
         request.setUsername("jojo");
         request.setPassword("5555");
@@ -57,7 +57,7 @@ class UserServiceTest {
 
     @Test
     @Transactional
-    public void updateUser(){
+    void updateUser() {
         UpdateUserRequest request = new UpdateUserRequest();
         request.setFullName("jojo jo");
         request.setPhone("0977888999");
@@ -75,7 +75,7 @@ class UserServiceTest {
 
     @Test
     @Transactional
-    public void deleteUser(){
+    void deleteUser() {
         userService.deleteUser(1);
         IllegalArgumentException ex = assertThrows(
             IllegalArgumentException.class,
