@@ -7,13 +7,16 @@ async function login() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   });
-  const data = await res.json();
-  if (res.ok) {
-    localStorage.setItem('token', data.token);
-    alert('登入成功');
-    window.location.href = '/index.html';
-  } else {
+
+  if (!res.ok) {
+    const message = await readErrorMessage(res, '登入失敗');
+    document.getElementById('output').textContent = message;
     alert('登入失敗');
+    return;
   }
-  document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+
+  const data = await res.json();
+  localStorage.setItem('token', data.token);
+  alert('登入成功');
+  window.location.href = '/index.html';
 }

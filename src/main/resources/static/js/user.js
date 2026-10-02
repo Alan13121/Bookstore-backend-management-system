@@ -1,3 +1,5 @@
+let allRoles = [];
+
 document.addEventListener('DOMContentLoaded', () => {
   loadRoles().then(loadUserData);
   document.querySelector('#edit-user-form').addEventListener('submit', submitForm);
@@ -6,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadRoles() {
   const res = await fetch('/api/roles', { headers: authHeader() });
   const roles = await res.json();
+  allRoles = roles;
   const rolesContainer = document.querySelector('#roles');
   rolesContainer.innerHTML = '';
   const roleMap = { ROLE_ADMIN: '管理員', ROLE_STAFF: '員工', ROLE_WORKER: '作業員' };
@@ -39,12 +42,11 @@ function fillUserForm(user) {
   document.querySelector('#enabled').value = String(user.enabled);
   document.querySelector('#current-roles').textContent = user.roles?.join(', ') || '無';
 
-  if (user.roleIds) {
-    user.roleIds.forEach((id) => {
-      const checkbox = document.querySelector(`#roles input[value="${id}"]`);
-      if (checkbox) checkbox.checked = true;
-    });
-  }
+  (user.roles || []).forEach((name) => {
+    const role = allRoles.find((r) => r.name === name);
+    const checkbox = role && document.querySelector(`#roles input[value="${role.id}"]`);
+    if (checkbox) checkbox.checked = true;
+  });
 }
 
 async function submitForm(e) {

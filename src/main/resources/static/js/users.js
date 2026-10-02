@@ -2,6 +2,7 @@ async function getUsers() {
   const res = await fetch('/api/users', { headers: authHeader() });
   if (!res.ok) {
     alert('載入用戶失敗');
+    return;
   }
   const data = await res.json();
   renderUserTable(data);
@@ -30,11 +31,11 @@ function renderUserTable(users) {
   users.forEach((user) => {
     html += `
       <tr>
-        <td>${user.id}</td>
-        <td>${user.username}</td>
-        <td>${user.fullName ?? ''}</td>
-        <td>${user.phone ?? ''}</td>
-        <td>${user.email ?? ''}</td>
+        <td>${escapeHtml(user.id)}</td>
+        <td>${escapeHtml(user.username)}</td>
+        <td>${escapeHtml(user.fullName)}</td>
+        <td>${escapeHtml(user.phone)}</td>
+        <td>${escapeHtml(user.email)}</td>
         <td>
           <a href="#" class="delete-user" data-id="${user.id}">刪除</a> 
           <a href="user.html?id=${user.id}" class="update-user">更改</a>
@@ -72,7 +73,7 @@ async function deleteUser(id) {
   }
 }
 
-//新增用戶
+// 新增用戶
 async function createUser() {
   const user = {
     username: document.getElementById('new-username').value,

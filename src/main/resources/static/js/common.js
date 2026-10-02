@@ -7,8 +7,28 @@ function authHeader() {
   };
 }
 
+// 跳脫 HTML 特殊字元，避免以 innerHTML 組字串時被注入
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// 取出失敗回應中的錯誤訊息（後端為 {status, message}，其他情況用 fallback）
+async function readErrorMessage(res, fallback) {
+  try {
+    const data = await res.json();
+    return data.message || fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+
 // 公用的帶 header 載入頁面函數
-function loadPageWithToken(urlOrOptions, maybeId) {
+async function loadPageWithToken(urlOrOptions, maybeId) {
   let url;
   let id;
 
@@ -26,27 +46,22 @@ function loadPageWithToken(urlOrOptions, maybeId) {
     throw new Error('Invalid arguments');
   }
 
-  const token = localStorage.getItem('token');
-
-  fetch(url.split('?')[0], {
-    headers: {
-      Authorization: 'Bearer ' + token,
-    },
-  })
-    .then((res) => res.text())
-    .then((html) => {
-      history.pushState(null, '', url);
-      if (id) {
-        html = html.replace(
-          '</body>',
-          `<script>window.__USER_ID__=${JSON.stringify(id)}</script></body>`,
-        );
-      }
-      document.open();
-      document.write(html);
-      document.close();
-    })
-    .catch((err) => alert(err.message));
+  try {
+    const res = await fetch(url.split('?')[0], { headers: authHeader() });
+    let html = await res.text();
+    history.pushState(null, '', url);
+    if (id) {
+      html = html.replace(
+        '</body>',
+        `<script>window.__USER_ID__=${JSON.stringify(id)}</script></body>`,
+      );
+    }
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (err) {
+    alert(err.message);
+  }
 }
 
 // 嘗試更新 token，並回首頁

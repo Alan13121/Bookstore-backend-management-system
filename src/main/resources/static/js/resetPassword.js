@@ -8,12 +8,14 @@ async function resetPassword() {
     body: JSON.stringify({ username, newPassword }),
   });
 
-  const data = await res.text();
-  if (res.ok) {
-    alert('密碼重設成功');
-    window.location.href = 'login.html';
-  } else {
+  if (!res.ok) {
+    const message = await readErrorMessage(res, '密碼重設失敗');
+    document.getElementById('output').textContent = message;
     alert('密碼重設失敗');
+    return;
   }
-  document.getElementById('output').textContent = data;
+
+  document.getElementById('output').textContent = await res.text();
+  alert('密碼重設成功');
+  window.location.href = 'login.html';
 }

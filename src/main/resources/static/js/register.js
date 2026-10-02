@@ -12,9 +12,14 @@ async function register() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(user),
   });
+  if (!res.ok) {
+    const message = await readErrorMessage(res, '註冊失敗');
+    document.getElementById('output').textContent = message;
+    alert(message);
+    return;
+  }
   const text = await res.text();
   document.getElementById('output').textContent = text;
   alert(text);
   window.location.href = '/index.html';
-  return;
 }

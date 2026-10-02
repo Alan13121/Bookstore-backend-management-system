@@ -2,9 +2,6 @@ const apiBase = '/api/roles/mappings';
 const roleApiBase = '/api/roles';
 const userApiBase = '/api/users';
 
-// === 公用 Header ===
-const headers = authHeader();
-
 // === 全域角色清單（給角色總覽使用）===
 let allRoles = [];
 
@@ -26,7 +23,7 @@ document.getElementById('roleForm').addEventListener('submit', async (e) => {
 
   const res = await fetch(apiBase, {
     method: 'POST',
-    headers,
+    headers: authHeader(),
     body: JSON.stringify({ urlPattern, roles }),
   });
 
@@ -41,7 +38,7 @@ document.getElementById('roleForm').addEventListener('submit', async (e) => {
 
 // 載入規則
 async function loadRules() {
-  const res = await fetch(apiBase, { headers });
+  const res = await fetch(apiBase, { headers: authHeader() });
   if (!res.ok) {
     alert('載入規則失敗');
     return;
@@ -54,8 +51,8 @@ async function loadRules() {
   data.forEach((rule) => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <input value="${rule.urlPattern}" id="url-${rule.id}">
-      <input value="${rule.roles}" id="roles-${rule.id}">
+      <input value="${escapeHtml(rule.urlPattern)}" id="url-${rule.id}">
+      <input value="${escapeHtml(rule.roles)}" id="roles-${rule.id}">
       <button onclick="updateRule(${rule.id})">更新</button>
       <button onclick="deleteRule(${rule.id})">刪除</button>
     `;
@@ -75,7 +72,7 @@ async function updateRule(id) {
 
   const res = await fetch(`${apiBase}/${id}`, {
     method: 'PUT',
-    headers,
+    headers: authHeader(),
     body: JSON.stringify({ urlPattern, roles }),
   });
 
@@ -91,7 +88,7 @@ async function updateRule(id) {
 async function deleteRule(id) {
   const res = await fetch(`${apiBase}/${id}`, {
     method: 'DELETE',
-    headers,
+    headers: authHeader(),
   });
   if (res.ok) {
     alert('刪除成功');
@@ -117,7 +114,7 @@ document.getElementById('roleForm2').addEventListener('submit', async (e) => {
 
   const res = await fetch(roleApiBase, {
     method: 'POST',
-    headers,
+    headers: authHeader(),
     body: JSON.stringify({ name }),
   });
 
@@ -133,7 +130,7 @@ document.getElementById('roleForm2').addEventListener('submit', async (e) => {
 
 // 載入角色列表（for 列表）
 async function loadRoleList() {
-  const res = await fetch(roleApiBase, { headers });
+  const res = await fetch(roleApiBase, { headers: authHeader() });
   if (!res.ok) {
     alert('載入角色失敗');
     return;
@@ -148,7 +145,7 @@ async function loadRoleList() {
   data.forEach((role) => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <input value="${role.name}" id="name-${role.id}">
+      <input value="${escapeHtml(role.name)}" id="name-${role.id}">
       <button onclick="updateRole(${role.id})">更新</button>
       <button onclick="deleteRole(${role.id})">刪除</button>
     `;
@@ -166,7 +163,7 @@ async function updateRole(id) {
 
   const res = await fetch(`${roleApiBase}/${id}`, {
     method: 'PUT',
-    headers,
+    headers: authHeader(),
     body: JSON.stringify({ name }),
   });
 
@@ -183,7 +180,7 @@ async function updateRole(id) {
 async function deleteRole(id) {
   const res = await fetch(`${roleApiBase}/${id}`, {
     method: 'DELETE',
-    headers,
+    headers: authHeader(),
   });
 
   if (res.ok) {
@@ -202,7 +199,7 @@ async function deleteRole(id) {
 // 載入所有用戶 + 勾選角色 checkbox
 async function loadAllUsers() {
   try {
-    const res = await fetch(userApiBase, { headers });
+    const res = await fetch(userApiBase, { headers: authHeader() });
     if (!res.ok) throw new Error(await res.text());
     const users = await res.json();
 
@@ -237,7 +234,7 @@ async function loadAllUsers() {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.value = role.id;
-        checkbox.checked = user.roleIds?.includes(role.id);
+        checkbox.checked = user.roles?.includes(role.name) ?? false;
         checkbox.dataset.userId = user.id;
 
         label.appendChild(checkbox);
@@ -271,7 +268,7 @@ async function saveUserRoles(userId, checkboxContainer) {
   try {
     const res = await fetch(`${userApiBase}/${userId}`, {
       method: 'PUT',
-      headers: { ...headers, 'Content-Type': 'application/json' },
+      headers: authHeader(),
       body: JSON.stringify(updatedUser),
     });
 
@@ -288,8 +285,8 @@ async function saveUserRoles(userId, checkboxContainer) {
 // ================================
 // 頁面載入時
 // ================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   loadRules(); // 規則管理
-  loadRoleList(); // 角色名稱管理 + 更新 allRoles[]
-  loadAllUsers(); // 全部用戶角色分配
+  await loadRoleList(); // 角色名稱管理 + 更新 allRoles[]
+  await loadAllUsers(); // 全部用戶角色分配（需要 allRoles 先載入）
 });
