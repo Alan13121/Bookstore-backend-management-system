@@ -30,7 +30,7 @@ class JwtTokenProviderTest {
     }
 
     @Test
-    void testGenerateAndValidateToken() {
+    void generateAndValidateToken() {
         User userDetails = new User(
                 "testuser",
                 "password",
@@ -52,7 +52,7 @@ class JwtTokenProviderTest {
     }
 
     @Test
-    void testInvalidToken() {
+    void invalidTokenIsRejected() {
         String invalidToken = "this.is.an.invalid.token";
 
         assertFalse(jwtTokenProvider.validateToken(invalidToken), "Invalid token should fail");
@@ -62,7 +62,7 @@ class JwtTokenProviderTest {
     }
 
     @Test
-    void testShortSecretKeyThrowsException() {
+    void shortSecretKeyThrowsException() {
         JwtTokenProvider provider = new JwtTokenProvider();
 
         assertThrows(IllegalArgumentException.class, () -> {

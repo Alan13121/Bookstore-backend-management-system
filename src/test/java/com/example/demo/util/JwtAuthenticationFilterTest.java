@@ -47,7 +47,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void shouldSetAuthenticationIfValidTokenProvided() throws ServletException, IOException {
+    void setsAuthenticationForValidToken() throws ServletException, IOException {
         String token = "valid.jwt.token";
         String username = "testuser";
         String header = "Bearer " + token;
@@ -68,7 +68,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void shouldNotSetAuthenticationIfInvalidToken() throws ServletException, IOException {
+    void skipsAuthenticationForInvalidToken() throws ServletException, IOException {
         String token = "invalid.jwt.token";
         String header = "Bearer " + token;
 
@@ -82,7 +82,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    void shouldNotSetAuthenticationIfNoAuthorizationHeader() throws ServletException, IOException {
+    void skipsAuthenticationWithoutHeader() throws ServletException, IOException {
         when(request.getHeader("Authorization")).thenReturn(null);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);

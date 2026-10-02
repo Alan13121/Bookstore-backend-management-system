@@ -15,20 +15,20 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.entity.UrlRoleMapping;
 
 @SpringBootTest
-public class UrlRoleMappingServiceTest {
+class UrlRoleMappingServiceTest {
 
     @Autowired
     private UrlRoleMappingService urlRoleMappingService;
 
     @Test
-    public void getAll() {
+    void getAll() {
         List<UrlRoleMapping> list = urlRoleMappingService.getAll();
         assertNotNull(list);
     }
 
     @Test
     @Transactional
-    public void save() {
+    void save() {
         UrlRoleMapping mapping = new UrlRoleMapping();
         mapping.setUrlPattern("/api/test");
         mapping.setRoles("ADMIN,USER");
@@ -41,7 +41,7 @@ public class UrlRoleMappingServiceTest {
 
     @Test
     @Transactional
-    public void delete() {
+    void delete() {
         assertTrue(urlRoleMappingService.delete(1L));
         assertFalse(urlRoleMappingService.delete(1L));
     }

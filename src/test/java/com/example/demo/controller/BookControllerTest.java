@@ -24,7 +24,7 @@ class BookControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void getAll() throws Exception{
+    void getAll() throws Exception{
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .get("/api/books");
 

@@ -111,7 +111,7 @@ class UserControllerTest {
 
     @Test
     @Transactional
-    void updateUser_notFound() throws Exception {
+    void updateUserNotFound() throws Exception {
         String jsonBody = "{ \"fullName\": \"No User\", \"email\": \"nouser@example.com\", \"phone\": \"0000000000\" }";
 
         RequestBuilder requestBuilder = MockMvcRequestBuilders

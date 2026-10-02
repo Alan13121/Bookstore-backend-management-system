@@ -84,7 +84,7 @@ spring.datasource.url=jdbc:mariadb://mariadb:3306/bookshop
 | Username | Password |
 | -------- | -------- |
 | `admin`  | `6969`   |
-| `user`   | `6969`   |
+| `staff`  | `6969`   |
 | `worker` | `6969`   |
 
 ---

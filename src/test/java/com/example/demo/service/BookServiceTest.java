@@ -19,18 +19,18 @@ import com.example.demo.dto.BookDto;
 import com.example.demo.dto.BookUpdateRequest;
 
 @SpringBootTest
-public class BookServiceTest {
+class BookServiceTest {
 
     @Autowired
     private BookService bookService;
 
     @Test
-    public void getAllBooks(){
+    void getAllBooks() {
         assertNotNull(bookService.getAllBooks());
     }
 
     @Test
-    public void getBookById(){
+    void getBookById() {
         Optional<BookDto> book = bookService.getBookById(1);
         assertNotNull(book);
         BookDto b = book.get();
@@ -39,7 +39,7 @@ public class BookServiceTest {
 
     @Test
     @Transactional
-    public void createBook(){
+    void createBook() {
         BookCreateRequest request = new BookCreateRequest();
         request.setTitle("jojo");
         request.setAuthor("荒木老頭");
@@ -58,7 +58,7 @@ public class BookServiceTest {
 
     @Test
     @Transactional
-    public void updateBook(){
+    void updateBook() {
         BookUpdateRequest request = new BookUpdateRequest();
         request.setTitle("jojo");
         request.setAuthor("荒木老頭");
@@ -78,7 +78,7 @@ public class BookServiceTest {
 
     @Test
     @Transactional
-    public void deleteBook(){
+    void deleteBook() {
         assertTrue(bookService.deleteBook(1));
         assertFalse(bookService.deleteBook(1));
     }

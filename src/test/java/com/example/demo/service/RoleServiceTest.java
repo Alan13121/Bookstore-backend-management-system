@@ -14,19 +14,19 @@ import com.example.demo.dto.RoleCreateRequest;
 import com.example.demo.dto.RoleDto;
 
 @SpringBootTest
-public class RoleServiceTest {
+class RoleServiceTest {
 
     @Autowired
     private RoleService roleService;
 
     @Test
-    public void getAllRoles() {
+    void getAllRoles() {
         List<RoleDto> list = roleService.getAllRoles();
         assertNotNull(list);
     }
 
     @Test
-    public void getRoleById() {
+    void getRoleById() {
         Optional<RoleDto> role = roleService.getRoleById(1);
         assertNotNull(role);
         if (role.isPresent()) {
@@ -36,7 +36,7 @@ public class RoleServiceTest {
 
     @Test
     @Transactional
-    public void createRole() {
+    void createRole() {
         RoleCreateRequest request = new RoleCreateRequest();
         request.setName("TEST_ROLE");
 
@@ -46,7 +46,7 @@ public class RoleServiceTest {
 
     @Test
     @Transactional
-    public void updateRole() {
+    void updateRole() {
         RoleCreateRequest updateReq = new RoleCreateRequest();
         updateReq.setName("UPDATED_ROLE");
 
@@ -56,7 +56,7 @@ public class RoleServiceTest {
 
     @Test
     @Transactional
-    public void deleteRole() {
+    void deleteRole() {
         assertTrue(roleService.deleteRole(1));
         assertFalse(roleService.deleteRole(1));
     }

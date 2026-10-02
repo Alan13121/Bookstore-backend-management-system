@@ -23,7 +23,7 @@ import com.example.demo.entity.User;
 import com.example.demo.util.JwtTokenProvider;
 
 @SpringBootTest
-public class AuthServiceTest {
+class AuthServiceTest {
 
     @Autowired
     AuthService authService;
@@ -35,7 +35,7 @@ public class AuthServiceTest {
     JwtTokenProvider jwtTokenProvider;
 
     @Test
-    public void login(){
+    void login() {
         AuthRequest request = new AuthRequest();
         request.setUsername("admin");
         request.setPassword("6969");
@@ -48,7 +48,7 @@ public class AuthServiceTest {
 
     @Test
     @Transactional
-    public void register() {
+    void register() {
         RegisterRequest req = new RegisterRequest();
         req.setUsername("newuser");
         req.setPassword("123456");
@@ -65,7 +65,7 @@ public class AuthServiceTest {
 
     @Test
     @Transactional
-    public void resetPassword() {
+    void resetPassword() {
         ResetPasswordRequest resetReq = new ResetPasswordRequest();
         resetReq.setUsername("admin");
         resetReq.setNewPassword("222222");
@@ -80,7 +80,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void refreshToken() {
+    void refreshToken() {
         // 模擬一個已驗證的使用者
         User user = userService.searchUsersByUsername("admin").get(0);
         Authentication authentication = new TestingAuthenticationToken(user, null, "ROLE_ADMIN");
@@ -92,7 +92,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void checkToken() {
+    void checkToken() {
         User user = userService.searchUsersByUsername("admin").get(0);
         Authentication authentication = new TestingAuthenticationToken(user, null, "ROLE_ADMIN");
         authentication.setAuthenticated(true);
