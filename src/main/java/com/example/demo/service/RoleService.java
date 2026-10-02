@@ -1,15 +1,16 @@
 package com.example.demo.service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.Dto.RoleCreateRequest;
 import com.example.demo.Dto.RoleDto;
 import com.example.demo.entity.Role;
 import com.example.demo.repository.RoleRepository;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class RoleService {

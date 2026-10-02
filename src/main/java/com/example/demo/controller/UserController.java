@@ -1,18 +1,20 @@
 package com.example.demo.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.example.demo.Dto.CreateUserRequest;
 import com.example.demo.Dto.UpdateUserRequest;
 import com.example.demo.Dto.UserResponse;
 import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController

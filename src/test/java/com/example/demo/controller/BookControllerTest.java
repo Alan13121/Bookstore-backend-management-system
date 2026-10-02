@@ -1,5 +1,9 @@
 package com.example.demo.controller;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -10,10 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -61,7 +61,7 @@ class BookControllerTest {
     void delete() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .delete("/api/books/{id}",1);
-        
+
         mockMvc.perform(requestBuilder)
                 .andExpect(status().is(204));
     }
@@ -80,4 +80,3 @@ class BookControllerTest {
     }
 
 }
-

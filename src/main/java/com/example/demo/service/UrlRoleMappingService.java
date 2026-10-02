@@ -1,12 +1,12 @@
 package com.example.demo.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.UrlRoleMapping;
 import com.example.demo.repository.UrlRoleMappingRepository;
-
-import java.util.List;
 
 @Service
 public class UrlRoleMappingService {

@@ -13,4 +13,3 @@ public class BookDto {
     private BigDecimal listPrice;
     private BigDecimal salePrice;
 }
-

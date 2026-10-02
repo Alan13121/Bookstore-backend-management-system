@@ -1,16 +1,17 @@
 package com.example.demo.service;
 
-import com.example.demo.Dto.RoleCreateRequest;
-import com.example.demo.Dto.RoleDto;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.example.demo.Dto.RoleCreateRequest;
+import com.example.demo.Dto.RoleDto;
 
 @SpringBootTest
 public class RoleServiceTest {

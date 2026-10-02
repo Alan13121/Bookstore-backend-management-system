@@ -8,4 +8,3 @@ import com.example.demo.entity.UrlRoleMapping;
 @Repository
 public interface UrlRoleMappingRepository extends JpaRepository<UrlRoleMapping, Long> {
 }
-

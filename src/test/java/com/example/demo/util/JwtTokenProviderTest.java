@@ -1,14 +1,15 @@
 package com.example.demo.util;
 
-import io.jsonwebtoken.JwtException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.core.userdetails.User;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.reflect.Field;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.core.userdetails.User;
+
+import io.jsonwebtoken.JwtException;
 
 class JwtTokenProviderTest {
 

@@ -1,14 +1,14 @@
 package com.example.demo.entity;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.security.core.GrantedAuthority;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.core.GrantedAuthority;
 
 class UserEntityTest {
 

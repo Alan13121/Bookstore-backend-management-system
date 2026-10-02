@@ -46,7 +46,7 @@ public class BookServiceTest {
         request.setDescription("歐拉");
         request.setSalePrice(new BigDecimal("888"));
         request.setListPrice(new BigDecimal("777"));
-        
+
         BookDto b = bookService.createBook(request);
         assertNotNull(bookService.getBookById(b.getId()));
         assertEquals("jojo", b.getTitle());
@@ -73,7 +73,7 @@ public class BookServiceTest {
         assertEquals("歐拉", b.getDescription());
         assertEquals(0, b.getSalePrice().compareTo(new BigDecimal("888")));
         assertEquals(0, b.getListPrice().compareTo(new BigDecimal("777")));
-    
+
     }
 
     @Test

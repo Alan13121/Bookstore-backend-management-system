@@ -1,6 +1,7 @@
 package com.example.demo.Dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import lombok.Data;
 
 @Data
@@ -12,4 +13,3 @@ public class RoleDto {
     @Schema(description = "角色名稱", example = "ROLE_ADMIN")
     private String name;
 }
-

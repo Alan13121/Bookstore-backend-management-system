@@ -1,12 +1,13 @@
 package com.example.demo.util;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import com.example.demo.entity.UrlRoleMapping;
-import com.example.demo.service.UrlRoleMappingService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -15,9 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import com.example.demo.entity.UrlRoleMapping;
+import com.example.demo.service.UrlRoleMappingService;
 
 @Component
 public class DynamicAuthorizationFilter extends OncePerRequestFilter {
@@ -30,9 +30,9 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
         "/api/roles/mappings/public",
         "/favicon.ico"
     );
-    
+
     private static final List<String> STARTS_WITH = List.of(
-        "/static/", "/js/", "/css/", "/api/auth/", 
+        "/static/", "/js/", "/css/", "/api/auth/",
         "/v3/api-docs/", "/actuator/", "/swagger-ui/"
     );
 
@@ -47,11 +47,11 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        
+
         System.out.println("[DEBUG] DynamicAuthorizationFilter triggered ");
         // 在白名單的都不用比對 直接批准
         if (isWhitelisted(uri)) {
-            filterChain.doFilter(request, response);//交給下個filter
+            filterChain.doFilter(request, response); // 交給下個filter
             return;
         }
 
@@ -59,7 +59,7 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
         List<UrlRoleMapping> mappings = mappingService.getAll();
 
         for (UrlRoleMapping mapping : mappings) {
-            String rawPattern = mapping.getUrlPattern(); 
+            String rawPattern = mapping.getUrlPattern();
             String[] requiredRoles = mapping.getRoles().split(",");
 
             if (matchWithExtension(uri, rawPattern)) {

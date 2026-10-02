@@ -1,5 +1,8 @@
 package com.example.demo.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,9 +13,6 @@ import com.example.demo.service.UrlRoleMappingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
@@ -60,5 +60,3 @@ public class RoleMappingController {
     }
 
 }
-
-

@@ -1,8 +1,8 @@
 package com.example.demo.Dto;
 
-import lombok.Data;
-
 import java.util.Set;
+
+import lombok.Data;
 
 @Data
 public class UserResponse {

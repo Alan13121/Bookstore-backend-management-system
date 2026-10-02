@@ -1,38 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <title>👤 編輯用戶</title>
-</head>
-<body>
-<h1>👤 編輯用戶</h1>
-<a href="/user/users.html">返回用戶列表</a>
+  <head>
+    <meta charset="UTF-8" />
+    <title>👤 編輯用戶</title>
+  </head>
+  <body>
+    <h1>👤 編輯用戶</h1>
+    <a href="/user/users.html">返回用戶列表</a>
 
-<form id="edit-user-form">
-  <p>ID: <span id="user-id"></span></p>
-  <p>Username: <input type="text" id="username" disabled></p>
-  <p>Full Name: <input type="text" id="fullName"></p>
-  <p>Phone: <input type="text" id="phone"></p>
-  <p>Email: <input type="text" id="email"></p>
-  <p>Enabled: 
-    <select id="enabled">
-      <option value="true">true</option>
-      <option value="false">false</option>
-    </select>
-  </p>
+    <form id="edit-user-form">
+      <p>ID: <span id="user-id"></span></p>
+      <p>Username: <input type="text" id="username" disabled /></p>
+      <p>Full Name: <input type="text" id="fullName" /></p>
+      <p>Phone: <input type="text" id="phone" /></p>
+      <p>Email: <input type="text" id="email" /></p>
+      <p>
+        Enabled:
+        <select id="enabled">
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      </p>
 
-  <p>目前擁有角色: <span id="current-roles"></span></p>
-  <p>勾選下列選項，以更改用戶角色：</p>
-  <div id="roles"></div>
+      <p>目前擁有角色: <span id="current-roles"></span></p>
+      <p>勾選下列選項，以更改用戶角色：</p>
+      <div id="roles"></div>
 
-  <button type="submit">保存</button>
-</form>
+      <button type="submit">保存</button>
+    </form>
 
-<script src="/js/common.js"></script>
-<script src="/js/user.js"></script>
-<script>
-checkAuthOrRedirect();
-</script>
-
-</body>
+    <script src="/js/common.js"></script>
+    <script src="/js/user.js"></script>
+    <script>
+      checkAuthOrRedirect();
+    </script>
+  </body>
 </html>

@@ -1,11 +1,11 @@
 async function getBooks() {
   const res = await fetch('/api/books', { headers: authHeader() });
   if (!res.ok) {
-    alert("載入書籍失敗");
+    alert('載入書籍失敗');
     return;
   }
   const data = await res.json();
-  renderBookTable(data);//印出所有書籍
+  renderBookTable(data); //印出所有書籍
 }
 //印出所有書籍
 function renderBookTable(books) {
@@ -31,7 +31,7 @@ function renderBookTable(books) {
       <tbody>
   `;
 
-  books.forEach(book => {
+  books.forEach((book) => {
     html += `
       <tr>
         <td>${book.id}</td>
@@ -68,10 +68,12 @@ async function createBook() {
     author: document.getElementById('book-author').value,
     description: document.getElementById('book-desc').value,
     listPrice: parseFloat(document.getElementById('book-list-price').value),
-    salePrice: parseFloat(document.getElementById('book-sale-price').value)
+    salePrice: parseFloat(document.getElementById('book-sale-price').value),
   };
   const res = await fetch('/api/books', {
-    method: 'POST', headers: authHeader(), body: JSON.stringify(book)
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(book),
   });
   const data = await res.json();
   alert('新增成功');
@@ -85,22 +87,24 @@ async function updateBook() {
     author: document.getElementById('book-author-update').value,
     description: document.getElementById('book-desc-update').value,
     listPrice: parseFloat(document.getElementById('book-list-price-update').value),
-    salePrice: parseFloat(document.getElementById('book-sale-price-update').value)
+    salePrice: parseFloat(document.getElementById('book-sale-price-update').value),
   };
   const res = await fetch(`/api/books/${id}`, {
-    method: 'PUT', headers: authHeader(), body: JSON.stringify(book)
+    method: 'PUT',
+    headers: authHeader(),
+    body: JSON.stringify(book),
   });
   const data = await res.json();
   alert('更新成功');
   getBooks();
 }
 
-
 // 刪除書籍
 async function deleteBook(id) {
   if (!confirm(`確定要刪除書籍 ${id} 嗎?`)) return;
   const res = await fetch(`/api/books/${id}`, {
-    method: 'DELETE', headers: authHeader()
+    method: 'DELETE',
+    headers: authHeader(),
   });
 
   if (res.status === 204) {
@@ -109,8 +113,7 @@ async function deleteBook(id) {
   } else {
     alert('書籍不存在');
   }
-  
 }
 document.addEventListener('DOMContentLoaded', () => {
-    getBooks();
-})
+  getBooks();
+});

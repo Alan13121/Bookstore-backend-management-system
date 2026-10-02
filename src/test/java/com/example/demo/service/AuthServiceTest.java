@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,7 @@ public class AuthServiceTest {
         String token = authService.login(request);
         assertTrue(jwtTokenProvider.validateToken(token));
         assertEquals(request.getUsername(), jwtTokenProvider.getUsernameFromToken(token));
-        
+
     }
 
     @Test
@@ -75,7 +74,7 @@ public class AuthServiceTest {
 
         assertDoesNotThrow(() -> {
             User u = userService.searchUsersByUsername("admin").get(0);
-            //密碼會加密 無法直接比對
+            // 密碼會加密 無法直接比對
             assertNotNull(u.getPassword());
         });
     }

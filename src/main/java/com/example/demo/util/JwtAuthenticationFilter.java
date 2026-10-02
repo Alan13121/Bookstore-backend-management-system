@@ -1,5 +1,7 @@
 package com.example.demo.util;
 
+import java.io.IOException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,8 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.demo.service.CustomUserDetailsService;
-
-import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = null;
 
         System.out.println("[DEBUG] JwtAuthenticationFilter triggered for URI: " + request.getRequestURI());
-        System.out.println("[DEBUG] " + 
+        System.out.println("[DEBUG] " +
                 (header == null || header.isBlank() ? "header is EMPTY" : "header not null"));
 
         if (header != null && header.startsWith("Bearer ")) {
@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 username = jwtTokenProvider.getUsernameFromToken(token);
                 System.out.println("[DEBUG] Valid JWT detected.");
                 System.out.println("[DEBUG] Username from token: " + username);
-                System.out.println("[DEBUG] " + 
+                System.out.println("[DEBUG] " +
                         (token == null || token.isBlank() ? "Token is EMPTY" : "token not null"));
 
             }
