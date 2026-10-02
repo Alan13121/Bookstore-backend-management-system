@@ -150,12 +150,18 @@ class SecurityIntegrationTest {
                 .andExpect(status().isForbidden());
     }
 
-    /** 記錄已知風險：reset-password 不需登入，也不驗證身分（僅描述現況，非期望行為）。 */
+    /** 忘記密碼：不需登入即可重設，重設後舊密碼失效、新密碼可登入。 */
     @Test
-    void knownRisk_resetPasswordRequiresNoAuthentication() throws Exception {
-        String body = mapper.writeValueAsString(Map.of("username", "worker", "newPassword", "hacked1"));
+    void resetPasswordWithoutLoginReplacesOldPassword() throws Exception {
+        String body = mapper.writeValueAsString(Map.of("username", "worker", "newPassword", "newPass1"));
         mvc.perform(post("/api/auth/reset-password").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk());
-        login("worker", "hacked1");
+
+        login("worker", "newPass1");
+
+        String oldBody = mapper.writeValueAsString(Map.of("username", "worker", "password", "6969"));
+        int code = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(oldBody))
+                .andReturn().getResponse().getStatus();
+        assertTrue(code >= 400, "old password must stop working, got " + code);
     }
 }
