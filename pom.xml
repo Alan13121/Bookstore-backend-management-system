@@ -125,6 +125,29 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>2.43.0</version>
+				<!-- 不綁定到 build 生命週期；手動執行 mvn spotless:check / spotless:apply -->
+				<configuration>
+					<java>
+						<includes>
+							<include>src/**/*.java</include>
+						</includes>
+						<removeUnusedImports/>
+						<importOrder>
+							<order>java,jakarta,javax,org,com,io,lombok,</order>
+						</importOrder>
+						<trimTrailingWhitespace/>
+						<endWithNewline/>
+						<indent>
+							<spaces>true</spaces>
+							<spacesPerTab>4</spacesPerTab>
+						</indent>
+					</java>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
