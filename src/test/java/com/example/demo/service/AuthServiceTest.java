@@ -16,9 +16,9 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.Dto.AuthRequest;
-import com.example.demo.Dto.RegisterRequest;
-import com.example.demo.Dto.ResetPasswordRequest;
+import com.example.demo.dto.AuthRequest;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.ResetPasswordRequest;
 import com.example.demo.entity.User;
 import com.example.demo.util.JwtTokenProvider;
 

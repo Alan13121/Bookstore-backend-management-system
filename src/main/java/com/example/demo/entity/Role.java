@@ -8,9 +8,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "roles")
 public class Role {
@@ -22,7 +24,7 @@ public class Role {
     @Column(name = "name")
     private String name;
 
-    @ManyToMany(mappedBy = "roles",fetch = FetchType.LAZY )
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
@@ -32,7 +34,5 @@ public class Role {
         this.id = id;
         this.name = name;
     }
-
-    public Role() {}
 
 }

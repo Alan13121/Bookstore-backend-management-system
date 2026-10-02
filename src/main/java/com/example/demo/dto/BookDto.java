@@ -1,11 +1,12 @@
-package com.example.demo.Dto;
+package com.example.demo.dto;
 
 import java.math.BigDecimal;
 
 import lombok.Data;
 
 @Data
-public class BookCreateRequest {
+public class BookDto {
+    private Integer id;
     private String title;
     private String author;
     private String description;

@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.Dto.RoleCreateRequest;
-import com.example.demo.Dto.RoleDto;
+import com.example.demo.dto.RoleCreateRequest;
+import com.example.demo.dto.RoleDto;
 import com.example.demo.service.RoleService;
 
 import io.swagger.v3.oas.annotations.Operation;

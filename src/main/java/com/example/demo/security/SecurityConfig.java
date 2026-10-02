@@ -1,6 +1,5 @@
 package com.example.demo.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,11 +19,14 @@ import com.example.demo.util.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Autowired
-    private DynamicAuthorizationFilter dynamicAuthorizationFilter;
+    private final DynamicAuthorizationFilter dynamicAuthorizationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, DynamicAuthorizationFilter dynamicAuthorizationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.dynamicAuthorizationFilter = dynamicAuthorizationFilter;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

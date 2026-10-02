@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.Dto.BookCreateRequest;
-import com.example.demo.Dto.BookDto;
-import com.example.demo.Dto.BookUpdateRequest;
+import com.example.demo.dto.BookCreateRequest;
+import com.example.demo.dto.BookDto;
+import com.example.demo.dto.BookUpdateRequest;
 
 @SpringBootTest
 public class BookServiceTest {

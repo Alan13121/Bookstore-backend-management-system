@@ -7,9 +7,9 @@ import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.Dto.CreateUserRequest;
-import com.example.demo.Dto.UpdateUserRequest;
-import com.example.demo.Dto.UserResponse;
+import com.example.demo.dto.CreateUserRequest;
+import com.example.demo.dto.UpdateUserRequest;
+import com.example.demo.dto.UserResponse;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.repository.RoleRepository;

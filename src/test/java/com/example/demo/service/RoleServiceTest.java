@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.Dto.RoleCreateRequest;
-import com.example.demo.Dto.RoleDto;
+import com.example.demo.dto.RoleCreateRequest;
+import com.example.demo.dto.RoleDto;
 
 @SpringBootTest
 public class RoleServiceTest {

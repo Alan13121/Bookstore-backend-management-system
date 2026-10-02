@@ -9,7 +9,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,8 +21,11 @@ import com.example.demo.service.UrlRoleMappingService;
 @Component
 public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private UrlRoleMappingService mappingService;
+    private final UrlRoleMappingService mappingService;
+
+    public DynamicAuthorizationFilter(UrlRoleMappingService mappingService) {
+        this.mappingService = mappingService;
+    }
 
     // 白名單 URL
     private static final List<String> WHITELIST = List.of(

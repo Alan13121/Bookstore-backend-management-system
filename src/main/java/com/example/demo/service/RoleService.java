@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.Dto.RoleCreateRequest;
-import com.example.demo.Dto.RoleDto;
+import com.example.demo.dto.RoleCreateRequest;
+import com.example.demo.dto.RoleDto;
 import com.example.demo.entity.Role;
 import com.example.demo.repository.RoleRepository;
 

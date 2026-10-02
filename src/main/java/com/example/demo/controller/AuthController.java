@@ -1,14 +1,13 @@
 package com.example.demo.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.Dto.AuthRequest;
-import com.example.demo.Dto.AuthResponse;
-import com.example.demo.Dto.RegisterRequest;
-import com.example.demo.Dto.ResetPasswordRequest;
+import com.example.demo.dto.AuthRequest;
+import com.example.demo.dto.AuthResponse;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.ResetPasswordRequest;
 import com.example.demo.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,8 +19,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "入口")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @Operation(summary = "登入取得token")
     @PostMapping("/login")

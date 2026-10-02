@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.Dto.CreateUserRequest;
-import com.example.demo.Dto.UpdateUserRequest;
-import com.example.demo.Dto.UserResponse;
+import com.example.demo.dto.CreateUserRequest;
+import com.example.demo.dto.UpdateUserRequest;
+import com.example.demo.dto.UserResponse;
 import com.example.demo.entity.User;
 import com.example.demo.service.UserService;
 

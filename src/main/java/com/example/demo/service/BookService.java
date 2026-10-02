@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.example.demo.Dto.BookCreateRequest;
-import com.example.demo.Dto.BookDto;
-import com.example.demo.Dto.BookUpdateRequest;
+import com.example.demo.dto.BookCreateRequest;
+import com.example.demo.dto.BookDto;
+import com.example.demo.dto.BookUpdateRequest;
 import com.example.demo.entity.Book;
 import com.example.demo.repository.BookRepository;
 

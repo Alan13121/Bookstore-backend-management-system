@@ -1,4 +1,4 @@
-package com.example.demo.Dto;
+package com.example.demo.dto;
 
 import java.util.Set;
 
@@ -7,11 +7,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(description = "用戶更新請求資料")
-public class UpdateUserRequest {
+@Schema(description = "用戶新增請求資料")
+public class CreateUserRequest {
 
-    @Schema(description = "暱稱", example = "Jerry")
+    @Schema(description = "用戶名稱", example = "jerry")
     private String username;
+
+    @Schema(description = "密碼", example = "123456")
+    private String password;
 
     @Schema(description = "全名", example = "Jerry Chen")
     private String fullName;
