@@ -26,28 +26,28 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    @GetMapping
     @Operation(summary = "查詢所有書")
+    @GetMapping
     public List<BookDto> getAll() {
         return bookService.getAllBooks();
     }
 
-    @GetMapping("/{id}")
     @Operation(summary = "查詢一本書")
+    @GetMapping("/{id}")
     public ResponseEntity<BookDto> getOne(@PathVariable Integer id) {
         return bookService.getBookById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
     @Operation(summary = "新增一本書")
+    @PostMapping
     public BookDto create(@RequestBody BookCreateRequest request) {
         return bookService.createBook(request);
     }
 
-    @PutMapping("/{id}")
     @Operation(summary = "更新一本書")
+    @PutMapping("/{id}")
     public ResponseEntity<BookDto> update(
             @PathVariable Integer id,
             @RequestBody BookUpdateRequest request) {
@@ -56,8 +56,8 @@ public class BookController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
     @Operation(summary = "刪除一本書")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         if (bookService.deleteBook(id)) {
             return ResponseEntity.noContent().build();

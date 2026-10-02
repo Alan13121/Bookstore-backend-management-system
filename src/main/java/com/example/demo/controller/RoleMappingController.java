@@ -25,33 +25,33 @@ public class RoleMappingController {
         this.urlRoleMappingService = urlRoleMappingService;
     }
 
-    @GetMapping
     @Operation(summary = "查詢所有角色訪問權限")
+    @GetMapping
     public List<UrlRoleMapping> getAll() {
         return urlRoleMappingService.getAll();
     }
 
-    @PostMapping
     @Operation(summary = "新增角色訪問權限")
+    @PostMapping
     public UrlRoleMapping save(@RequestBody UrlRoleMapping mapping) {
         return urlRoleMappingService.save(mapping);
     }
 
-    @PutMapping("/{id}")
     @Operation(summary = "更新角色訪問權限")
+    @PutMapping("/{id}")
     public UrlRoleMapping update(@PathVariable Long id, @RequestBody UrlRoleMapping mapping) {
         mapping.setId(id);
         return urlRoleMappingService.save(mapping);
     }
 
-    @DeleteMapping("/{id}")
     @Operation(summary = "刪除角色訪問權限")
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         urlRoleMappingService.delete(id);
     }
 
-    @GetMapping("/public")
     @Operation(summary = "公開版角色規則（前端選單用）")
+    @GetMapping("/public")
     public List<PublicRoleMappingDto> getPublicMappings() {
         return urlRoleMappingService.getAll().stream()
             .map(mapping -> new PublicRoleMappingDto(

@@ -18,6 +18,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.example.demo.entity.UrlRoleMapping;
 import com.example.demo.service.UrlRoleMappingService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
@@ -50,7 +53,7 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        System.out.println("[DEBUG] DynamicAuthorizationFilter triggered ");
+        log.debug("動態授權檢查: {}", uri);
         // 在白名單的都不用比對 直接批准
         if (isWhitelisted(uri)) {
             filterChain.doFilter(request, response); // 交給下個filter
@@ -69,11 +72,11 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
 
                 if (auth == null || auth.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
-                        .peek(r -> System.out.println("[DEBUG] before replace: " + r))  // debug 印出 r
                         .map(r -> r.replace("ROLE_", "")) // 去掉前綴 ROLE_
                         .noneMatch(role -> Arrays.asList(requiredRoles).contains(role))) {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write("Forbidden: insufficient role");
+                    response.setContentType("text/plain;charset=UTF-8");
+                    response.getWriter().write("權限不足");
                     return;
                 }
             }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.RoleCreateRequest;
@@ -51,7 +50,7 @@ public class RoleService {
                 role.setName(request.getName());
                 return toDto(roleRepository.save(role));
             })
-            .orElseThrow(() -> new RuntimeException("Role not found with id " + id));
+            .orElseThrow(() -> new IllegalArgumentException("找不到角色，ID: " + id));
     }
 
     public boolean deleteRole(Integer id) {
@@ -60,28 +59,5 @@ public class RoleService {
             return true;
         }
         return false;
-    }
-
-    public ResponseEntity<RoleDto> findRoleResponse(Integer id) {
-        return getRoleById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    public ResponseEntity<RoleDto> createRoleResponse(RoleCreateRequest request) {
-        return ResponseEntity.ok(createRole(request));
-    }
-
-    public ResponseEntity<RoleDto> updateRoleResponse(Integer id, RoleCreateRequest request) {
-        try {
-            return ResponseEntity.ok(updateRole(id, request));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    public ResponseEntity<Void> deleteRoleResponse(Integer id) {
-        deleteRole(id);
-        return ResponseEntity.noContent().build();
     }
 }

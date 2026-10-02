@@ -34,25 +34,28 @@ public class RoleController {
     @Operation(summary = "查詢一個角色")
     @GetMapping("/{id}")
     public ResponseEntity<RoleDto> getRoleById(@PathVariable Integer id) {
-        return roleService.findRoleResponse(id);
+        return roleService.getRoleById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "新增角色")
     @PostMapping
-    public ResponseEntity<RoleDto> createRole(@RequestBody RoleCreateRequest request) {
-        return roleService.createRoleResponse(request);
+    public RoleDto createRole(@RequestBody RoleCreateRequest request) {
+        return roleService.createRole(request);
     }
 
     @Operation(summary = "更新角色")
     @PutMapping("/{id}")
-    public ResponseEntity<RoleDto> updateRole(@PathVariable Integer id,
-                                              @RequestBody RoleCreateRequest request) {
-        return roleService.updateRoleResponse(id, request);
+    public RoleDto updateRole(@PathVariable Integer id,
+                              @RequestBody RoleCreateRequest request) {
+        return roleService.updateRole(id, request);
     }
 
     @Operation(summary = "刪除角色")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRole(@PathVariable Integer id) {
-        return roleService.deleteRoleResponse(id);
+        roleService.deleteRole(id);
+        return ResponseEntity.noContent().build();
     }
 }

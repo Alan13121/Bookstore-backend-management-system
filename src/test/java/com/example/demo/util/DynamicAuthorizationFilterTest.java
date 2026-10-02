@@ -90,7 +90,7 @@ class DynamicAuthorizationFilterTest {
         filter.doFilterInternal(get("/api/books/1"), response, chain);
 
         assertEquals(403, response.getStatus());
-        assertEquals("Forbidden: insufficient role", response.getContentAsString());
+        assertEquals("權限不足", response.getContentAsString());
         verify(chain, never()).doFilter(any(), any());
     }
 

@@ -15,6 +15,9 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class JwtTokenProvider {
 
@@ -49,7 +52,7 @@ public class JwtTokenProvider {
             parseClaims(token); // 能成功解析就算合法
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            System.err.println("Invalid JWT: " + e.getMessage());
+            log.warn("JWT 驗證失敗: {}", e.getMessage());
             return false;
         }
     }
