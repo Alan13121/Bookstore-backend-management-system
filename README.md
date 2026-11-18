@@ -186,6 +186,41 @@ http://localhost:8080/swagger-ui/index.html
 
 ---
 
+## 🧱 專案結構與開發慣例
+
+```
+com.example.demo
+├── controller   # 只負責接收請求、呼叫 Service、回傳 DTO，不寫商業邏輯
+├── service      # 商業邏輯、交易控制（@Transactional）、Entity ↔ DTO 轉換
+├── repository   # Spring Data JPA 介面
+├── entity       # JPA Entity，不直接對外回傳
+├── dto          # 請求 / 回應物件
+├── exception    # 自訂例外與 GlobalExceptionHandler
+├── security     # SecurityConfig、JWT、動態授權 Filter
+└── config       # 其他設定（OpenAPI）
+```
+
+**命名**
+
+| 類型 | 規則 | 範例 |
+|---|---|---|
+| 請求 DTO | `Xxx` + `CreateRequest` / `UpdateRequest` | `BookCreateRequest` |
+| 回應 DTO | `Xxx` + `Response` | `BookResponse` |
+| Controller / Service 方法 | `getAllXxx`、`getXxxById`、`createXxx`、`updateXxx`、`deleteXxx` | `getBookById` |
+| Service 內的轉換方法 | `toResponse(entity)`（private） | |
+
+**錯誤處理與狀態碼**
+
+- Service 找不到資料時丟 `ResourceNotFoundException` → 404
+- 資料重複（例如用戶名已存在）丟 `DuplicateResourceException` → 409
+- 未登入 / 帳密錯誤 → 401；參數不合法（`IllegalArgumentException`）→ 400
+- 錯誤回應格式一律為 `{ "status": 404, "message": "..." }`
+- 刪除成功一律回 `204 No Content`
+
+**格式**：提交前執行 `mvn spotless:apply`（4 空白縮排、import 依 java → jakarta → javax → org → com → io → lombok 排序，不使用萬用字元 import）。
+
+---
+
 ## ⛔ 停止與清除
 
 停止所有容器：
