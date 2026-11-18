@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class BookControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void getAll() throws Exception{
+    void getAllBooks() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .get("/api/books");
 
@@ -34,9 +34,9 @@ class BookControllerTest {
     }
 
     @Test
-    void getOne() throws Exception {
+    void getBookById() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .get("/api/books/{id}",1);
+                .get("/api/books/{id}", 1);
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
@@ -45,9 +45,9 @@ class BookControllerTest {
 
     @Test
     @Transactional
-    void create() throws Exception {
+    void createBook() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .post("/api/books",1)
+                .post("/api/books")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\":\"Spring Boot in Action\",\"author\":\"Craig Walls\",\"description\":\"good book\",\"listPrice\":399.00,\"salePrice\":100.00}");
 
@@ -58,9 +58,9 @@ class BookControllerTest {
 
     @Test
     @Transactional
-    void delete() throws Exception {
+    void deleteBook() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .delete("/api/books/{id}",1);
+                .delete("/api/books/{id}", 1);
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().is(204));
@@ -68,7 +68,7 @@ class BookControllerTest {
 
     @Test
     @Transactional
-    void update() throws Exception {
+    void updateBook() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .put("/api/books/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -79,4 +79,13 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.title", equalTo("jojo ola ola ola ola")));
     }
 
+    @Test
+    void getBookByIdNotFound() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/api/books/{id}", 9999);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", equalTo("找不到書籍，ID: 9999")));
+    }
 }

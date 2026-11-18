@@ -1,6 +1,10 @@
-package com.example.demo.util;
+package com.example.demo.security;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -38,7 +42,6 @@ class JwtTokenProviderTest {
         );
 
         String token = jwtTokenProvider.generateToken(userDetails);
-        System.out.println("Generated Token: " + token);
 
         assertNotNull(token);
         assertTrue(jwtTokenProvider.validateToken(token), "Token should be valid");

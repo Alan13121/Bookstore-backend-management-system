@@ -3,21 +3,29 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.BookCreateRequest;
-import com.example.demo.dto.BookDto;
+import com.example.demo.dto.BookResponse;
 import com.example.demo.dto.BookUpdateRequest;
 import com.example.demo.service.BookService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/books")
-@Tag(name = "書籍管理", description = "處理書籍的增刪查改")
+@Tag(name = "書籍管理", description = "書籍的增刪查改")
+@SecurityRequirement(name = "bearerAuth")
 public class BookController {
 
     private final BookService bookService;
@@ -26,42 +34,35 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    @Operation(summary = "查詢所有書")
+    @Operation(summary = "查詢所有書籍")
     @GetMapping
-    public List<BookDto> getAll() {
+    public List<BookResponse> getAllBooks() {
         return bookService.getAllBooks();
     }
 
-    @Operation(summary = "查詢一本書")
+    @Operation(summary = "查詢單本書籍")
     @GetMapping("/{id}")
-    public ResponseEntity<BookDto> getOne(@PathVariable Integer id) {
-        return bookService.getBookById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public BookResponse getBookById(@Parameter(description = "書籍 ID") @PathVariable Integer id) {
+        return bookService.getBookById(id);
     }
 
-    @Operation(summary = "新增一本書")
+    @Operation(summary = "新增書籍")
     @PostMapping
-    public BookDto create(@RequestBody BookCreateRequest request) {
+    public BookResponse createBook(@RequestBody BookCreateRequest request) {
         return bookService.createBook(request);
     }
 
-    @Operation(summary = "更新一本書")
+    @Operation(summary = "更新書籍")
     @PutMapping("/{id}")
-    public ResponseEntity<BookDto> update(
-            @PathVariable Integer id,
-            @RequestBody BookUpdateRequest request) {
-        return bookService.updateBook(id,request)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public BookResponse updateBook(@Parameter(description = "書籍 ID") @PathVariable Integer id,
+                                   @RequestBody BookUpdateRequest request) {
+        return bookService.updateBook(id, request);
     }
 
-    @Operation(summary = "刪除一本書")
+    @Operation(summary = "刪除書籍")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        if (bookService.deleteBook(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteBook(@Parameter(description = "書籍 ID") @PathVariable Integer id) {
+        bookService.deleteBook(id);
+        return ResponseEntity.noContent().build();
     }
 }

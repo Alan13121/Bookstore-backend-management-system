@@ -5,8 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(name = "AuthRequest", description = "登入請求")
-public class AuthRequest {
+@Schema(name = "LoginRequest", description = "登入請求")
+public class LoginRequest {
+
     @Schema(description = "用戶名", example = "admin")
     private String username;
 

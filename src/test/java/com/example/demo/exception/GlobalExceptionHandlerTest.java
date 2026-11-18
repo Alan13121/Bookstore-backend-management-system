@@ -3,6 +3,7 @@ package com.example.demo.exception;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,8 +39,7 @@ class GlobalExceptionHandlerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateMissingRoleReturns404() throws Exception {
-        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                        .put("/api/roles/9999")
+        mvc.perform(put("/api/roles/9999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"X\"}"))
                 .andExpect(status().isNotFound())

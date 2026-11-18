@@ -1,9 +1,8 @@
 package com.example.demo.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.List;
-import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.RoleCreateRequest;
-import com.example.demo.dto.RoleDto;
+import com.example.demo.dto.RoleResponse;
+import com.example.demo.dto.RoleUpdateRequest;
+import com.example.demo.exception.ResourceNotFoundException;
 
 @SpringBootTest
 class RoleServiceTest {
@@ -21,17 +22,12 @@ class RoleServiceTest {
 
     @Test
     void getAllRoles() {
-        List<RoleDto> list = roleService.getAllRoles();
-        assertNotNull(list);
+        assertNotNull(roleService.getAllRoles());
     }
 
     @Test
     void getRoleById() {
-        Optional<RoleDto> role = roleService.getRoleById(1);
-        assertNotNull(role);
-        if (role.isPresent()) {
-            assertEquals(1, role.get().getId());
-        }
+        assertEquals(1, roleService.getRoleById(1).getId());
     }
 
     @Test
@@ -40,24 +36,27 @@ class RoleServiceTest {
         RoleCreateRequest request = new RoleCreateRequest();
         request.setName("TEST_ROLE");
 
-        RoleDto dto = roleService.createRole(request);
-        assertEquals("TEST_ROLE", dto.getName());
+        RoleResponse role = roleService.createRole(request);
+
+        assertEquals("TEST_ROLE", role.getName());
     }
 
     @Test
     @Transactional
     void updateRole() {
-        RoleCreateRequest updateReq = new RoleCreateRequest();
-        updateReq.setName("UPDATED_ROLE");
+        RoleUpdateRequest request = new RoleUpdateRequest();
+        request.setName("UPDATED_ROLE");
 
-        RoleDto updated = roleService.updateRole(1, updateReq);
-        assertEquals("UPDATED_ROLE", updated.getName());
+        RoleResponse role = roleService.updateRole(1, request);
+
+        assertEquals("UPDATED_ROLE", role.getName());
     }
 
     @Test
     @Transactional
     void deleteRole() {
-        assertTrue(roleService.deleteRole(1));
-        assertFalse(roleService.deleteRole(1));
+        roleService.deleteRole(1);
+
+        assertThrows(ResourceNotFoundException.class, () -> roleService.deleteRole(1));
     }
 }

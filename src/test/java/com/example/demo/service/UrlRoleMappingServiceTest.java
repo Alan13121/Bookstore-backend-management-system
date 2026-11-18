@@ -3,16 +3,17 @@ package com.example.demo.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.entity.UrlRoleMapping;
+import com.example.demo.dto.UrlRoleMappingCreateRequest;
+import com.example.demo.dto.UrlRoleMappingResponse;
+import com.example.demo.dto.UrlRoleMappingUpdateRequest;
+import com.example.demo.exception.ResourceNotFoundException;
 
 @SpringBootTest
 class UrlRoleMappingServiceTest {
@@ -21,28 +22,57 @@ class UrlRoleMappingServiceTest {
     private UrlRoleMappingService urlRoleMappingService;
 
     @Test
-    void getAll() {
-        List<UrlRoleMapping> list = urlRoleMappingService.getAll();
-        assertNotNull(list);
+    void getAllMappings() {
+        assertFalse(urlRoleMappingService.getAllMappings().isEmpty());
+    }
+
+    @Test
+    void getPublicMappings() {
+        assertFalse(urlRoleMappingService.getPublicMappings().isEmpty());
     }
 
     @Test
     @Transactional
-    void save() {
-        UrlRoleMapping mapping = new UrlRoleMapping();
-        mapping.setUrlPattern("/api/test");
-        mapping.setRoles("ADMIN,USER");
+    void createMapping() {
+        UrlRoleMappingCreateRequest request = new UrlRoleMappingCreateRequest();
+        request.setUrlPattern("/api/test");
+        request.setRoles("ADMIN,USER");
 
-        UrlRoleMapping saved = urlRoleMappingService.save(mapping);
-        assertNotNull(saved.getId());
-        assertEquals("/api/test", saved.getUrlPattern());
-        assertEquals("ADMIN,USER", saved.getRoles());
+        UrlRoleMappingResponse mapping = urlRoleMappingService.createMapping(request);
+
+        assertNotNull(mapping.getId());
+        assertEquals("/api/test", mapping.getUrlPattern());
+        assertEquals("ADMIN,USER", mapping.getRoles());
     }
 
     @Test
     @Transactional
-    void delete() {
-        assertTrue(urlRoleMappingService.delete(1L));
-        assertFalse(urlRoleMappingService.delete(1L));
+    void updateMapping() {
+        UrlRoleMappingUpdateRequest request = new UrlRoleMappingUpdateRequest();
+        request.setUrlPattern("/api/books/**");
+        request.setRoles("ADMIN");
+
+        UrlRoleMappingResponse mapping = urlRoleMappingService.updateMapping(1L, request);
+
+        assertEquals(1L, mapping.getId());
+        assertEquals("ADMIN", mapping.getRoles());
+    }
+
+    @Test
+    @Transactional
+    void updateMappingNotFound() {
+        UrlRoleMappingUpdateRequest request = new UrlRoleMappingUpdateRequest();
+        request.setUrlPattern("/x");
+        request.setRoles("ADMIN");
+
+        assertThrows(ResourceNotFoundException.class, () -> urlRoleMappingService.updateMapping(9999L, request));
+    }
+
+    @Test
+    @Transactional
+    void deleteMapping() {
+        urlRoleMappingService.deleteMapping(1L);
+
+        assertThrows(ResourceNotFoundException.class, () -> urlRoleMappingService.deleteMapping(1L));
     }
 }

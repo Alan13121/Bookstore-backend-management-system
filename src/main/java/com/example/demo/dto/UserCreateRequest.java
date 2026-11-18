@@ -7,10 +7,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(description = "用戶新增請求資料")
-public class CreateUserRequest {
+@Schema(name = "UserCreateRequest", description = "新增用戶請求")
+public class UserCreateRequest {
 
-    @Schema(description = "用戶名稱", example = "jerry")
+    @Schema(description = "用戶名", example = "jerry")
     private String username;
 
     @Schema(description = "密碼", example = "123456")
