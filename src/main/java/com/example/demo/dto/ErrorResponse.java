@@ -6,6 +6,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 統一的錯誤回應格式，由 {@code GlobalExceptionHandler} 產生。
+ *
+ * <p>例如：{@code {"status": 404, "message": "找不到書籍，ID: 99"}}。
+ * 前端只要讀 message 就能顯示錯誤，不用針對每支 API 寫不同的解析方式。</p>
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

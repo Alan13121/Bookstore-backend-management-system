@@ -6,6 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 新增書籍的請求內容（POST /api/books 的 request body）。
+ *
+ * <p>DTO（Data Transfer Object）只負責在前端與後端之間「搬資料」。
+ * 沒有 id 欄位，因為 id 由資料庫自動產生，不該讓前端決定。</p>
+ */
 @Data
 @Schema(name = "BookCreateRequest", description = "新增書籍請求")
 public class BookCreateRequest {

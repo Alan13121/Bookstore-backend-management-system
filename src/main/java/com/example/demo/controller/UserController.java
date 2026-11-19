@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+/** 用戶管理 API（預設規則：只有 ADMIN 可以存取）。 */
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "用戶管理", description = "用戶的增刪查改")
@@ -41,12 +42,14 @@ public class UserController {
         return userService.getAllUsers();
     }
 
+    /** "/active" 是固定路徑，Spring 會優先比對它，所以不會被當成 "/{id}"。 */
     @Operation(summary = "查詢所有啟用中的用戶")
     @GetMapping("/active")
     public List<UserResponse> getAllActiveUsers() {
         return userService.getAllActiveUsers();
     }
 
+    /** GET /api/users/search?keyword=xxx：{@code @RequestParam} 取得網址 ? 後面的查詢參數。 */
     @Operation(summary = "依用戶名關鍵字搜尋用戶")
     @GetMapping("/search")
     public List<UserResponse> searchUsers(@Parameter(description = "用戶名關鍵字") @RequestParam String keyword) {

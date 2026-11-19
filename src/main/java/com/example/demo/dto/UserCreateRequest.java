@@ -6,6 +6,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 管理員新增用戶的請求內容（POST /api/users）。
+ *
+ * <p>與 {@link RegisterRequest} 的差別：可以直接指定角色（roleIds）與是否啟用。</p>
+ */
 @Data
 @Schema(name = "UserCreateRequest", description = "新增用戶請求")
 public class UserCreateRequest {

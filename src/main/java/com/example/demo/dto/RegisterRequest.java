@@ -4,6 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 一般使用者自行註冊的請求內容（POST /api/auth/register）。
+ *
+ * <p>不能自己指定角色，註冊後一律給 STAFF（見 {@code AuthService.register}）。</p>
+ */
 @Data
 @Schema(name = "RegisterRequest", description = "註冊新用戶請求")
 public class RegisterRequest {

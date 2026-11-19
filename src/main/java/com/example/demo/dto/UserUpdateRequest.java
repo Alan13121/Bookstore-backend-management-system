@@ -6,6 +6,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 更新用戶的請求內容，採「部分更新」：欄位為 null 代表不修改。
+ *
+ * <p>這裡沒有密碼欄位，密碼另外透過重設密碼流程處理。</p>
+ */
 @Data
 @Schema(name = "UserUpdateRequest", description = "更新用戶請求（欄位為 null 表示不修改）")
 public class UserUpdateRequest {

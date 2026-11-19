@@ -17,6 +17,13 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 
+/**
+ * 用戶管理的商業邏輯（給管理員使用；自行註冊的流程在 AuthService）。
+ *
+ * <p>{@code @Transactional(readOnly = true)} 加在類別上，表示所有方法預設在「唯讀交易」中執行
+ * （Hibernate 會省略變更檢查，效能較好）；會寫入資料的方法再個別標上 {@code @Transactional} 覆蓋成可寫入。
+ * 同一個交易中的操作要嘛全部成功、要嘛全部回滾（rollback）。</p>
+ */
 @Service
 @Transactional(readOnly = true)
 public class UserService {
@@ -56,14 +63,17 @@ public class UserService {
                 .collect(Collectors.joining(","));
     }
 
+    /** 管理員新增用戶，可以直接指定角色與是否啟用。 */
     @Transactional
     public UserResponse createUser(UserCreateRequest request) {
         User user = new User();
         user.setUsername(request.getUsername());
+        // 密碼一定要先加密再存，資料庫只保存 BCrypt 雜湊值
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.setEmail(request.getEmail());
+        // 沒有指定時預設為啟用
         user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
         if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
             user.setRoles(findRoles(request.getRoleIds()));
@@ -71,7 +81,7 @@ public class UserService {
         return toResponse(userRepository.save(user));
     }
 
-    /** 只更新非 null 的欄位。 */
+    /** 部分更新：只更新非 null 的欄位；有傳角色時會整組取代原本的角色。 */
     @Transactional
     public UserResponse updateUser(Integer id, UserUpdateRequest request) {
         User user = findUser(id);
@@ -96,6 +106,7 @@ public class UserService {
         return toResponse(userRepository.save(user));
     }
 
+    /** 刪除用戶；找不到時丟出 404。 */
     @Transactional
     public void deleteUser(Integer id) {
         if (!userRepository.existsById(id)) {
@@ -108,6 +119,7 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> notFound(id));
     }
 
+    /** 把角色 id 轉成 Role 物件；任何一個 id 不存在就丟出 404，整筆操作失敗。 */
     private Set<Role> findRoles(Set<Integer> roleIds) {
         return roleIds.stream()
                 .map(roleId -> roleRepository.findById(roleId)
@@ -125,6 +137,7 @@ public class UserService {
                 .toList();
     }
 
+    /** Entity → DTO：刻意不複製 password，角色只取名稱。 */
     private UserResponse toResponse(User user) {
         UserResponse response = new UserResponse();
         response.setId(user.getId());

@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+/** 角色管理 API（預設規則：只有 ADMIN 可以存取）。 */
 @RestController
 @RequestMapping("/api/roles")
 @Tag(name = "角色管理", description = "角色的增刪查改")
