@@ -6,6 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 回傳給前端的書籍資料，由 {@code BookService.toResponse()} 從 Entity 轉換而來。
+ *
+ * <p>不直接回傳 Entity 的好處：資料表結構改變時不會連帶改變 API 格式，
+ * 也能決定哪些欄位要對外公開。</p>
+ */
 @Data
 @Schema(name = "BookResponse", description = "書籍資料")
 public class BookResponse {

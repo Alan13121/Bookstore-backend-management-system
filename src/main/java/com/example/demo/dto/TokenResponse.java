@@ -6,6 +6,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 登入或刷新 token 後的回應。
+ *
+ * <p>前端拿到後要存起來，之後每次呼叫 API 都在 Header 帶上
+ * {@code Authorization: Bearer <token>}。</p>
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

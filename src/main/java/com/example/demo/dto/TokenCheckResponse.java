@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** 檢查登入狀態的回應：目前登入者的帳號與權限（含 {@code ROLE_} 前綴）。 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

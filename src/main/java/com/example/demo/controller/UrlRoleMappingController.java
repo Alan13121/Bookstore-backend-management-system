@@ -23,6 +23,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+/**
+ * 動態權限規則 API：管理員在這裡設定「哪個網址允許哪些角色」。
+ *
+ * <p>修改後下一個 request 就會生效，因為 DynamicAuthorizationFilter 每次都從資料庫讀取規則。
+ * 這個路徑也符合 {@code /api/roles/.*} 規則，所以預設只有 ADMIN 能存取；只有 /public 在白名單中。</p>
+ */
 @RestController
 @RequestMapping("/api/roles/mappings")
 @Tag(name = "角色權限管理", description = "動態訪問權限的增刪查改")

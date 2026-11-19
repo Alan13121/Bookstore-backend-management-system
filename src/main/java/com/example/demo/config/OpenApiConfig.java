@@ -6,6 +6,16 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 
+/**
+ * Swagger（OpenAPI）文件的驗證設定。
+ *
+ * <p>定義一個名為 {@code bearerAuth} 的驗證方式：在 Header 帶上 {@code Authorization: Bearer <JWT>}。
+ * Controller 標上 {@code @SecurityRequirement(name = "bearerAuth")} 之後，Swagger UI 右上角會出現
+ * 「Authorize」按鈕，貼上登入取得的 token 就能直接測試需要登入的 API。</p>
+ *
+ * <p>這個類別沒有程式碼，只是用來掛註解；{@code @Configuration} 讓 Spring 掃描到它。
+ * 這些設定只影響文件顯示，不影響實際的權限檢查。</p>
+ */
 @Configuration
 @SecurityScheme(
         name = "bearerAuth",

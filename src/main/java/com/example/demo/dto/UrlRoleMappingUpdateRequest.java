@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/** 更新權限規則的請求內容，要更新哪一筆由網址上的 id 決定。 */
 @Data
 @Schema(name = "UrlRoleMappingUpdateRequest", description = "更新角色訪問權限請求")
 public class UrlRoleMappingUpdateRequest {
