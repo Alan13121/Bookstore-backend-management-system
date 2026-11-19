@@ -25,10 +25,10 @@ async function updateBook(id) {
 
   try {
     await apiFetch(`/api/books/${id}`, { method: 'PUT', body: book });
-    alert('更新成功');
+    flashToast('書籍已更新');
     location.href = '/book/books.html';
   } catch (err) {
-    alert(`更新失敗：${err.message}`);
+    showToast(`更新失敗：${err.message}`, 'danger');
   }
 }
 
@@ -37,21 +37,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const id = getQueryParam('id');
   if (!id) {
-    alert('缺少書籍 ID');
+    flashToast('缺少書籍 ID', 'warning');
     location.href = '/book/books.html';
     return;
   }
+
+  const form = document.getElementById('edit-book-form');
+  // 資料載入前先停用整個表單（<fieldset disabled> 會一併停用裡面所有欄位與按鈕），
+  // 避免使用者在資料還沒回來時就按下保存，送出空白內容
+  const fieldset = form.querySelector('fieldset');
+  fieldset.disabled = true;
 
   try {
     fillBookForm(await apiFetch(`/api/books/${id}`));
   } catch (err) {
-    alert(`載入書籍失敗：${err.message}`);
+    flashToast(`載入書籍失敗：${err.message}`, 'danger');
     location.href = '/book/books.html';
     return;
   }
+  fieldset.disabled = false;
 
-  document.getElementById('edit-book-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    updateBook(id);
-  });
+  onFormSubmit(form, () => updateBook(id));
 });

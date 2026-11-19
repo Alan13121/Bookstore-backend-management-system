@@ -1,10 +1,13 @@
 // 用戶列表頁：列出、新增、刪除用戶（編輯在 user.html）
 
 async function getAllUsers() {
+  const container = document.getElementById('user-table');
+  showLoading(container);
   try {
     renderUserTable(await apiFetch('/api/users'));
   } catch (err) {
-    alert(`載入用戶失敗：${err.message}`);
+    container.innerHTML = '<p class="text-danger mb-0">用戶載入失敗</p>';
+    showToast(`載入用戶失敗：${err.message}`, 'danger');
   }
 }
 
@@ -26,7 +29,7 @@ function renderUserTable(users) {
         <td>${escapeHtml(user.email)}</td>
         <td class="text-end text-nowrap">
           <a class="btn btn-sm btn-outline-primary" href="/user/user.html?id=${encodeURIComponent(user.id)}">編輯</a>
-          <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${escapeHtml(user.id)}">刪除</button>
+          <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${escapeHtml(user.id)}" data-username="${escapeHtml(user.username)}">刪除</button>
         </td>
       </tr>`,
     )
@@ -46,7 +49,7 @@ async function loadRoleOptions() {
   try {
     renderRoleCheckboxes(document.getElementById('new-roles'), await apiFetch('/api/roles'));
   } catch (err) {
-    alert(`載入角色失敗：${err.message}`);
+    showToast(`載入角色失敗：${err.message}`, 'danger');
   }
 }
 
@@ -66,23 +69,36 @@ async function createUser() {
 
   try {
     await apiFetch('/api/users', { method: 'POST', body: user });
-    alert('新增成功');
+    showToast(`已新增用戶 ${user.username}`);
     form.reset();
     getAllUsers();
   } catch (err) {
-    alert(`新增失敗：${err.message}`);
+    // 409 = 用戶名重複，把訊息標在帳號欄位下方
+    if (err.status === 409) {
+      setFieldError(document.getElementById('new-username'), err.message);
+    } else {
+      showToast(`新增失敗：${err.message}`, 'danger');
+    }
   }
 }
 
-async function deleteUser(id) {
-  if (!confirm(`確定要刪除用戶 ${id} 嗎?`)) return;
-  try {
-    await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
-    alert('刪除成功');
-    getAllUsers();
-  } catch (err) {
-    alert(`刪除失敗：${err.message}`);
-  }
+async function deleteUser(btn) {
+  const { id, username } = btn.dataset;
+  const ok = await confirmDialog(`確定要刪除用戶 ${username} 嗎？刪除後無法復原。`, {
+    title: '刪除用戶',
+    confirmText: '刪除',
+  });
+  if (!ok) return;
+  // 確認後才進入載入中狀態
+  await withLoading(btn, async () => {
+    try {
+      await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
+      showToast(`已刪除用戶 ${username}`);
+      getAllUsers();
+    } catch (err) {
+      showToast(`刪除失敗：${err.message}`, 'danger');
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -91,14 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
   getAllUsers();
   loadRoleOptions();
 
-  document.getElementById('create-user-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    createUser();
-  });
+  onFormSubmit(document.getElementById('create-user-form'), createUser);
 
   // 事件委派：監聽器掛在外層容器，表格重新渲染後依然有效
   document.getElementById('user-table').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action="delete"]');
-    if (btn) deleteUser(btn.dataset.id);
+    if (btn) deleteUser(btn);
   });
 });

@@ -49,12 +49,25 @@ function itemValue(li, name) {
   return li.querySelector(`input[name="${name}"]`).value.trim();
 }
 
+// 檢查清單項目裡的輸入框都有填；空的欄位標紅並回傳 false
+function requireItemValues(li, names) {
+  let ok = true;
+  names.forEach((name) => {
+    const input = li.querySelector(`input[name="${name}"]`);
+    input.classList.toggle('is-invalid', !input.value.trim());
+    if (!input.value.trim()) ok = false;
+  });
+  if (!ok) showToast('請填寫所有欄位', 'warning');
+  return ok;
+}
+
 // 事件委派（event delegation）：清單每次重新載入都會換掉裡面的按鈕，
 // 所以監聽器掛在不會被換掉的 <ul> 上，再依 data-action 決定要做什麼。
+// 把被點的按鈕也傳給 handler，讓它在呼叫 API 時用 withLoading 顯示載入中。
 function onListAction(listId, handlers) {
   document.getElementById(listId).addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');
-    if (btn) handlers[btn.dataset.action](btn.closest('li'));
+    if (btn) handlers[btn.dataset.action](btn.closest('li'), btn);
   });
 }
 
@@ -66,10 +79,10 @@ async function loadUserRoles() {
   const container = document.getElementById('user-roles-container');
   try {
     const users = await apiFetch(USER_API);
-    container.innerHTML = '';
-    users.forEach((user) => container.appendChild(createUserCard(user)));
+    container.replaceChildren(...users.map(createUserCard));
   } catch (err) {
-    alert(`無法載入用戶清單：${err.message}`);
+    container.innerHTML = '<p class="text-danger mb-0">用戶清單載入失敗</p>';
+    showToast(`無法載入用戶清單：${err.message}`, 'danger');
   }
 }
 
@@ -100,7 +113,9 @@ function createUserCard(user) {
   // mt-auto：把按鈕推到卡片底部，各卡片高度不同時按鈕仍對齊
   saveBtn.className = 'btn btn-sm btn-primary mt-auto align-self-start';
   saveBtn.textContent = '保存角色變更';
-  saveBtn.addEventListener('click', () => saveUserRoles(user, checkboxArea));
+  saveBtn.addEventListener('click', () =>
+    withLoading(saveBtn, () => saveUserRoles(user, checkboxArea)),
+  );
 
   body.append(header, currentRoles, checkboxArea, saveBtn);
   card.append(body);
@@ -113,10 +128,10 @@ async function saveUserRoles(user, checkboxArea) {
   const roleIds = getCheckedRoleIds(checkboxArea);
   try {
     await apiFetch(`${USER_API}/${user.id}`, { method: 'PUT', body: { roleIds } });
-    alert(`用戶 ${user.username} 角色更新成功`);
+    showToast(`已更新 ${user.username} 的角色`);
     loadUserRoles();
   } catch (err) {
-    alert(`更新失敗：${err.message}`);
+    showToast(`更新失敗：${err.message}`, 'danger');
   }
 }
 
@@ -125,17 +140,17 @@ async function saveUserRoles(user, checkboxArea) {
 // ================================
 
 async function loadRoles() {
+  const list = document.getElementById('role-list');
   try {
     allRoles = await apiFetch(ROLE_API);
   } catch (err) {
-    alert(`載入角色失敗：${err.message}`);
+    list.innerHTML = '<li class="list-group-item text-danger">角色載入失敗</li>';
+    showToast(`載入角色失敗：${err.message}`, 'danger');
     return;
   }
-  const list = document.getElementById('role-list');
-  list.innerHTML = '';
-  allRoles.forEach((role) => {
-    list.appendChild(createEditableItem(role.id, [{ name: 'name', value: role.name }]));
-  });
+  list.replaceChildren(
+    ...allRoles.map((role) => createEditableItem(role.id, [{ name: 'name', value: role.name }])),
+  );
 }
 
 // 角色變動後，角色清單與用戶角色總覽都要更新（總覽要等 allRoles 更新完才能畫）
@@ -146,41 +161,50 @@ async function reloadRolesAndUsers() {
 
 async function createRole() {
   const name = document.getElementById('role-name').value.trim();
-  if (!name) return alert('請輸入角色名稱！');
 
   try {
     await apiFetch(ROLE_API, { method: 'POST', body: { name } });
-    alert('新增角色成功');
+    showToast(`已新增角色 ${name}`);
     document.getElementById('role-form').reset();
     reloadRolesAndUsers();
   } catch (err) {
-    alert(`新增角色失敗：${err.message}`);
+    showToast(`新增角色失敗：${err.message}`, 'danger');
   }
 }
 
-async function updateRole(li) {
+async function updateRole(li, btn) {
+  if (!requireItemValues(li, ['name'])) return;
   const name = itemValue(li, 'name');
-  if (!name) return alert('請輸入角色名稱！');
 
-  try {
-    await apiFetch(`${ROLE_API}/${li.dataset.id}`, { method: 'PUT', body: { name } });
-    alert('更新角色成功');
-    reloadRolesAndUsers();
-  } catch (err) {
-    alert(`更新角色失敗：${err.message}`);
-  }
+  await withLoading(btn, async () => {
+    try {
+      await apiFetch(`${ROLE_API}/${li.dataset.id}`, { method: 'PUT', body: { name } });
+      showToast(`角色已更新為 ${name}`);
+      reloadRolesAndUsers();
+    } catch (err) {
+      showToast(`更新角色失敗：${err.message}`, 'danger');
+    }
+  });
 }
 
-async function deleteRole(li) {
-  if (!confirm(`確定要刪除角色 ${itemValue(li, 'name')} 嗎?`)) return;
+async function deleteRole(li, btn) {
+  const name = itemValue(li, 'name');
+  const ok = await confirmDialog(`確定要刪除角色 ${name} 嗎？擁有此角色的用戶會失去它。`, {
+    title: '刪除角色',
+    confirmText: '刪除',
+  });
+  if (!ok) return;
 
-  try {
-    await apiFetch(`${ROLE_API}/${li.dataset.id}`, { method: 'DELETE' });
-    alert('刪除角色成功');
-    reloadRolesAndUsers();
-  } catch (err) {
-    alert(`刪除角色失敗：${err.message}`);
-  }
+  // 確認後才進入載入中狀態
+  await withLoading(btn, async () => {
+    try {
+      await apiFetch(`${ROLE_API}/${li.dataset.id}`, { method: 'DELETE' });
+      showToast(`已刪除角色 ${name}`);
+      reloadRolesAndUsers();
+    } catch (err) {
+      showToast(`刪除角色失敗：${err.message}`, 'danger');
+    }
+  });
 }
 
 // ================================
@@ -188,67 +212,76 @@ async function deleteRole(li) {
 // ================================
 
 async function loadRules() {
+  const list = document.getElementById('rule-list');
   let rules;
   try {
     rules = await apiFetch(RULE_API);
   } catch (err) {
-    alert(`載入規則失敗：${err.message}`);
+    list.innerHTML = '<li class="list-group-item text-danger">規則載入失敗</li>';
+    showToast(`載入規則失敗：${err.message}`, 'danger');
     return;
   }
-  const list = document.getElementById('rule-list');
-  list.innerHTML = '';
-  rules.forEach((rule) => {
-    list.appendChild(
+  list.replaceChildren(
+    ...rules.map((rule) =>
       createEditableItem(rule.id, [
         { name: 'urlPattern', value: rule.urlPattern, className: 'font-monospace-input' },
         { name: 'roles', value: rule.roles },
       ]),
-    );
-  });
+    ),
+  );
 }
 
 async function createRule() {
   const urlPattern = document.getElementById('rule-url-pattern').value.trim();
   const roles = document.getElementById('rule-roles').value.trim();
-  if (!urlPattern || !roles) return alert('請完整輸入！');
 
   try {
     await apiFetch(RULE_API, { method: 'POST', body: { urlPattern, roles } });
-    alert('新增成功');
+    showToast(`已新增規則 ${urlPattern}`);
     document.getElementById('rule-form').reset();
     loadRules();
   } catch (err) {
-    alert(`新增失敗：${err.message}`);
+    showToast(`新增規則失敗：${err.message}`, 'danger');
   }
 }
 
-async function updateRule(li) {
+async function updateRule(li, btn) {
+  if (!requireItemValues(li, ['urlPattern', 'roles'])) return;
   const urlPattern = itemValue(li, 'urlPattern');
   const roles = itemValue(li, 'roles');
-  if (!urlPattern || !roles) return alert('請完整輸入！');
 
-  try {
-    await apiFetch(`${RULE_API}/${li.dataset.id}`, {
-      method: 'PUT',
-      body: { urlPattern, roles },
-    });
-    alert('更新成功');
-    loadRules();
-  } catch (err) {
-    alert(`更新失敗：${err.message}`);
-  }
+  await withLoading(btn, async () => {
+    try {
+      await apiFetch(`${RULE_API}/${li.dataset.id}`, {
+        method: 'PUT',
+        body: { urlPattern, roles },
+      });
+      showToast(`規則 ${urlPattern} 已更新`);
+      loadRules();
+    } catch (err) {
+      showToast(`更新規則失敗：${err.message}`, 'danger');
+    }
+  });
 }
 
-async function deleteRule(li) {
-  if (!confirm(`確定要刪除規則 ${itemValue(li, 'urlPattern')} 嗎?`)) return;
+async function deleteRule(li, btn) {
+  const urlPattern = itemValue(li, 'urlPattern');
+  const ok = await confirmDialog(`確定要刪除規則 ${urlPattern} 嗎？`, {
+    title: '刪除權限規則',
+    confirmText: '刪除',
+  });
+  if (!ok) return;
 
-  try {
-    await apiFetch(`${RULE_API}/${li.dataset.id}`, { method: 'DELETE' });
-    alert('刪除成功');
-    loadRules();
-  } catch (err) {
-    alert(`刪除失敗：${err.message}`);
-  }
+  // 確認後才進入載入中狀態
+  await withLoading(btn, async () => {
+    try {
+      await apiFetch(`${RULE_API}/${li.dataset.id}`, { method: 'DELETE' });
+      showToast(`已刪除規則 ${urlPattern}`);
+      loadRules();
+    } catch (err) {
+      showToast(`刪除規則失敗：${err.message}`, 'danger');
+    }
+  });
 }
 
 // ================================
@@ -258,17 +291,16 @@ async function deleteRule(li) {
 document.addEventListener('DOMContentLoaded', () => {
   if (!checkAuthOrRedirect()) return;
 
-  document.getElementById('role-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    createRole();
-  });
-  document.getElementById('rule-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    createRule();
-  });
+  // 必填檢查交給 onFormSubmit 的 validateForm（依 HTML 的 required 屬性）
+  onFormSubmit(document.getElementById('role-form'), createRole);
+  onFormSubmit(document.getElementById('rule-form'), createRule);
   onListAction('role-list', { update: updateRole, delete: deleteRole });
   onListAction('rule-list', { update: updateRule, delete: deleteRule });
 
+  // 先顯示載入中，資料回來後由各自的 load 函式換掉
+  ['user-roles-container', 'role-list', 'rule-list'].forEach((id) =>
+    showLoading(document.getElementById(id)),
+  );
   loadRules();
   reloadRolesAndUsers(); // 用戶總覽需要 allRoles，所以先載角色再載用戶
 });

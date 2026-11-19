@@ -21,10 +21,10 @@ async function updateUser(userId) {
 
   try {
     await apiFetch(`/api/users/${userId}`, { method: 'PUT', body: updatedUser });
-    alert('更新成功');
+    flashToast('用戶資料已更新');
     location.href = '/user/users.html';
   } catch (err) {
-    alert(`更新失敗：${err.message}`);
+    showToast(`更新失敗：${err.message}`, 'danger');
   }
 }
 
@@ -37,6 +37,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  const form = document.getElementById('edit-user-form');
+  // 載入完成前停用表單，避免送出尚未填好的資料
+  const fieldset = form.querySelector('fieldset');
+  fieldset.disabled = true;
+
   try {
     // 兩個請求互不相依，用 Promise.all 同時送出，比一個等一個快
     const [roles, user] = await Promise.all([
@@ -45,13 +50,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
     fillUserForm(user, roles);
   } catch (err) {
-    alert(`載入用戶失敗：${err.message}`);
+    flashToast(`載入用戶失敗：${err.message}`, 'danger');
     location.href = '/user/users.html';
     return;
   }
+  fieldset.disabled = false;
 
-  document.getElementById('edit-user-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    updateUser(userId);
-  });
+  onFormSubmit(form, () => updateUser(userId));
 });

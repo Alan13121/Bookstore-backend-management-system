@@ -1,7 +1,9 @@
 // 註冊：公開 API，新帳號由後端給予預設角色（AuthService 的 DEFAULT_ROLE）
-document.getElementById('register-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+const registerForm = document.getElementById('register-form');
+
+onFormSubmit(registerForm, async () => {
   const output = document.getElementById('output');
+  output.textContent = '';
   const user = readFields({
     username: 'reg-username',
     password: 'reg-password',
@@ -12,11 +14,15 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
 
   try {
     const { message } = await apiFetch('/api/auth/register', { method: 'POST', body: user });
-    output.textContent = message;
-    alert(message);
-    location.href = '/index.html';
+    flashToast(message);
+    location.href = '/auth/login.html';
   } catch (err) {
-    output.textContent = err.message;
-    alert(err.message);
+    // 409 Conflict = 用戶名重複（後端 DuplicateResourceException），
+    // 這是某個欄位的問題，所以把訊息標在該欄位下方，而不是只顯示在表單底部
+    if (err.status === 409) {
+      setFieldError(document.getElementById('reg-username'), err.message);
+    } else {
+      output.textContent = err.message;
+    }
   }
 });

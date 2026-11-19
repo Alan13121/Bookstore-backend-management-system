@@ -193,7 +193,247 @@ function isTokenValid() {
 function checkAuthOrRedirect() {
   if (isTokenValid()) return true;
   clearToken();
-  alert('未登入帳號');
+  flashToast('請先登入', 'warning');
   location.href = '/index.html';
   return false;
+}
+
+// ============================================================
+// UI 互動：提示訊息（toast）、確認對話框、載入中狀態、表單驗證
+//
+// 為什麼不用 alert() / confirm()：它們會「凍結」整個頁面，必須按掉才能繼續，
+// 外觀也無法客製。改用 Bootstrap 的 Toast 與 Modal 元件，訊息會自動消失、
+// 不打斷操作。這些元件需要 Bootstrap 的 JS（bootstrap.bundle.min.js），
+// 它會建立全域物件 window.bootstrap；萬一 CDN 載入失敗，下面的函式都會
+// 退回使用 alert / confirm，功能至少還能用。
+// ============================================================
+
+// ---------- Toast 提示訊息 ----------
+
+// type 對應 Bootstrap 的顏色：success / danger / warning / info
+const TOAST_ICONS = { success: '✅', danger: '⚠️', warning: '🔔', info: 'ℹ️' };
+
+// 所有 toast 都放進右上角同一個容器，多則訊息會自動往下堆疊
+function getToastContainer() {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    document.body.append(container);
+  }
+  return container;
+}
+
+function showToast(message, type = 'success') {
+  if (!window.bootstrap) return alert(message);
+
+  const toast = document.createElement('div');
+  toast.className = `toast shop-toast shop-toast-${type}`;
+  // role="alert" + aria-live：讓螢幕閱讀器也會唸出這則訊息
+  toast.setAttribute('role', 'alert');
+  toast.setAttribute('aria-live', 'assertive');
+
+  const body = document.createElement('div');
+  body.className = 'd-flex align-items-start';
+  const text = document.createElement('div');
+  text.className = 'toast-body';
+  // 用 textContent 放訊息：後端回傳的錯誤訊息不會被當成 HTML 解析（避免 XSS）
+  text.textContent = `${TOAST_ICONS[type] ?? ''} ${message}`;
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'btn-close me-2 mt-2';
+  close.setAttribute('data-bs-dismiss', 'toast');
+  close.setAttribute('aria-label', '關閉');
+  body.append(text, close);
+  toast.append(body);
+
+  getToastContainer().append(toast);
+  // 錯誤訊息停留久一點，讓使用者有時間讀
+  const instance = new bootstrap.Toast(toast, { delay: type === 'danger' ? 6000 : 3000 });
+  // 動畫結束後把元素移除，避免 DOM 裡累積一堆隱藏的 toast
+  toast.addEventListener('hidden.bs.toast', () => toast.remove());
+  instance.show();
+}
+
+// 「跨頁」的 toast：例如登入成功後馬上跳轉到首頁，toast 還沒顯示頁面就換掉了。
+// 所以先存進 sessionStorage，下一頁載入時再取出顯示（類似後端框架的 flash message）。
+const FLASH_KEY = 'flashToast';
+
+function flashToast(message, type = 'success') {
+  try {
+    sessionStorage.setItem(FLASH_KEY, JSON.stringify({ message, type }));
+  } catch (e) {
+    // 無痕模式等情況可能無法寫入，就放棄這則提示，不影響主要功能
+  }
+}
+
+function showPendingFlashToast() {
+  try {
+    const raw = sessionStorage.getItem(FLASH_KEY);
+    if (!raw) return;
+    sessionStorage.removeItem(FLASH_KEY);
+    const { message, type } = JSON.parse(raw);
+    showToast(message, type);
+  } catch (e) {
+    // 同上，讀不到就算了
+  }
+}
+
+document.addEventListener('DOMContentLoaded', showPendingFlashToast);
+
+// ---------- 確認對話框 ----------
+
+// 回傳 Promise<boolean>，呼叫端可以這樣寫：
+//   if (!(await confirmDialog('確定要刪除嗎？'))) return;
+// 和原本 confirm() 的寫法幾乎一樣，只是多了 await。
+// 原生 confirm() 會暫停整個 JS 執行；Modal 不會，所以要用 Promise 把「使用者按了哪個鈕」傳回來。
+let confirmModalEl = null;
+
+function getConfirmModal() {
+  if (confirmModalEl) return confirmModalEl;
+  confirmModalEl = document.createElement('div');
+  confirmModalEl.className = 'modal fade';
+  confirmModalEl.tabIndex = -1;
+  confirmModalEl.setAttribute('aria-hidden', 'true');
+  // 這段 HTML 是固定的、不含使用者資料，所以可以用 innerHTML；訊息稍後用 textContent 放入
+  confirmModalEl.innerHTML = `
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" data-role="title"></h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+        </div>
+        <div class="modal-body" data-role="message"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn" data-role="confirm"></button>
+        </div>
+      </div>
+    </div>`;
+  document.body.append(confirmModalEl);
+  return confirmModalEl;
+}
+
+function confirmDialog(message, { title = '請確認', confirmText = '確定', danger = true } = {}) {
+  if (!window.bootstrap) return Promise.resolve(confirm(message));
+
+  const el = getConfirmModal();
+  el.querySelector('[data-role="title"]').textContent = title;
+  el.querySelector('[data-role="message"]').textContent = message;
+  const confirmBtn = el.querySelector('[data-role="confirm"]');
+  confirmBtn.textContent = confirmText;
+  confirmBtn.className = `btn ${danger ? 'btn-danger' : 'btn-primary'}`;
+
+  const modal = bootstrap.Modal.getOrCreateInstance(el);
+  return new Promise((resolve) => {
+    let confirmed = false;
+    // 用 onclick 屬性（而不是 addEventListener）：每次開啟會「覆蓋」上一次的處理函式，
+    // 不會因為重複開啟對話框而累積多個監聽器
+    confirmBtn.onclick = () => {
+      confirmed = true;
+      modal.hide();
+    };
+    // 不論按確定、取消、叉叉或 Esc，最後都會觸發 hidden 事件，在這裡統一回傳結果
+    el.addEventListener('hidden.bs.modal', () => resolve(confirmed), { once: true });
+    modal.show();
+  });
+}
+
+// ---------- 載入中狀態 ----------
+
+// 在資料容器裡顯示「載入中」轉圈圈，資料回來後 render 函式會把它整個換掉
+function showLoading(container, text = '載入中…') {
+  // <ul> 裡只能放 <li>，其他容器放 <div>
+  const el = document.createElement(container.tagName === 'UL' ? 'li' : 'div');
+  el.className = `${container.tagName === 'UL' ? 'list-group-item ' : 'w-100 '}text-center text-secondary py-4`;
+  const spinner = document.createElement('span');
+  spinner.className = 'spinner-border spinner-border-sm me-2';
+  spinner.setAttribute('aria-hidden', 'true');
+  el.append(spinner, text);
+  container.replaceChildren(el);
+}
+
+// 執行非同步工作期間，讓按鈕顯示轉圈圈並停用：
+// 1. 使用者知道「有在處理」，不會以為沒反應
+// 2. 防止連點造成重複送出（例如新增兩本一樣的書）
+// 用 try/finally 確保不論成功或失敗，按鈕最後都會恢復。
+async function withLoading(button, task) {
+  if (!button) return task();
+  if (button.disabled) return undefined; // 已經在處理中，忽略這次點擊
+
+  const originalHtml = button.innerHTML;
+  button.disabled = true;
+  button.innerHTML =
+    '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>處理中…';
+  try {
+    return await task();
+  } finally {
+    // 成功後常會跳頁或重新渲染，按鈕可能已經不在畫面上，恢復它也無妨
+    button.disabled = false;
+    button.innerHTML = originalHtml;
+  }
+}
+
+// ---------- 表單驗證 ----------
+//
+// 表單加上 novalidate 關掉瀏覽器內建的泡泡提示（每個瀏覽器長得不同、也無法調整樣式），
+// 改由我們自己檢查，並把錯誤訊息顯示在欄位下方（Bootstrap 的 is-invalid + invalid-feedback）。
+// 檢查規則仍然沿用 HTML 上的 required、type="email"、min="0" 等屬性，
+// 透過 Constraint Validation API（el.validity）讀出是哪一條規則沒過。
+
+function fieldErrorMessage(el) {
+  const v = el.validity;
+  if (v.valueMissing) return '此欄位為必填';
+  if (v.typeMismatch && el.type === 'email') return 'Email 格式不正確';
+  if (v.badInput) return '請輸入數字';
+  if (v.rangeUnderflow) return `不可小於 ${el.min}`;
+  return el.validationMessage;
+}
+
+function setFieldError(input, message) {
+  input.classList.add('is-invalid');
+  // 錯誤訊息放在欄位後面的 .invalid-feedback；沒有的話就建立一個
+  let feedback = input.nextElementSibling;
+  if (!feedback?.classList.contains('invalid-feedback')) {
+    feedback = document.createElement('div');
+    feedback.className = 'invalid-feedback';
+    input.after(feedback);
+  }
+  feedback.textContent = message;
+}
+
+function clearFieldError(input) {
+  input.classList.remove('is-invalid');
+}
+
+// 檢查整個表單：不合格的欄位標紅並顯示原因，游標移到第一個錯誤欄位。
+// 回傳 true 代表全部通過，可以送出。
+function validateForm(form) {
+  let firstInvalid = null;
+  form.querySelectorAll('input, select, textarea').forEach((el) => {
+    if (el.checkValidity()) {
+      clearFieldError(el);
+      return;
+    }
+    setFieldError(el, fieldErrorMessage(el));
+    firstInvalid ??= el;
+  });
+  firstInvalid?.focus();
+  return !firstInvalid;
+}
+
+// 使用者一開始修改欄位，就把該欄位的錯誤樣式拿掉（事件委派：掛在 document 上，所有頁面通用）
+document.addEventListener('input', (e) => {
+  if (e.target.classList?.contains('is-invalid')) clearFieldError(e.target);
+});
+
+// 綁定表單送出的共用流程：擋下瀏覽器預設送出 → 驗證 → 送出期間按鈕顯示載入中。
+// handler 是實際呼叫 API 的 async 函式。
+function onFormSubmit(form, handler) {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!validateForm(form)) return;
+    withLoading(form.querySelector('[type="submit"]'), handler);
+  });
 }

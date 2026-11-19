@@ -253,3 +253,53 @@ h4,
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* ---------- 5. 互動元件：Toast、Modal ---------- */
+
+/* Toast：左側一條色帶表示訊息類型，底色維持紙張色，和整體風格一致 */
+.shop-toast {
+  --bs-toast-bg: var(--shop-surface);
+  --bs-toast-border-color: var(--shop-line);
+  --bs-toast-color: var(--shop-ink);
+  border-left-width: 5px;
+  box-shadow: 0 6px 18px rgba(59, 42, 30, 0.15);
+}
+
+.shop-toast-success {
+  border-left-color: var(--shop-forest);
+}
+
+.shop-toast-danger {
+  border-left-color: var(--shop-brick);
+}
+
+.shop-toast-warning {
+  border-left-color: #c8902e;
+}
+
+.shop-toast-info {
+  border-left-color: var(--shop-leather);
+}
+
+/* Modal 確認對話框沿用卡片的紙張底色 */
+.modal {
+  --bs-modal-bg: var(--shop-surface);
+  --bs-modal-border-color: var(--shop-line);
+  --bs-modal-header-border-color: var(--shop-line);
+  --bs-modal-footer-border-color: var(--shop-line);
+}
+
+.btn-danger {
+  --bs-btn-bg: var(--shop-brick);
+  --bs-btn-border-color: var(--shop-brick);
+  --bs-btn-hover-bg: var(--shop-brick-dark);
+  --bs-btn-hover-border-color: var(--shop-brick-dark);
+  --bs-btn-active-bg: var(--shop-brick-dark);
+  --bs-btn-active-border-color: var(--shop-brick-dark);
+}
+
+/* 表單驗證錯誤用磚紅色，與刪除按鈕同色系 */
+:root {
+  --bs-form-invalid-color: var(--shop-brick);
+  --bs-form-invalid-border-color: var(--shop-brick);
+}

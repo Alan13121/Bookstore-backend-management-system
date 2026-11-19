@@ -75,12 +75,14 @@ async function getMappingList() {
 
 function logout() {
   clearToken();
-  alert('已登出');
+  // reload 後才顯示，所以用 flashToast（存進 sessionStorage，新頁面載入時取出）
+  flashToast('已登出', 'info');
   location.reload();
 }
 
 async function initMenu() {
   const menu = document.getElementById('menu');
+  showLoading(menu);
 
   // 先嘗試延長 token；過期或解不開都視為未登入
   await refreshToken();

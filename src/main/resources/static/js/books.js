@@ -10,10 +10,13 @@ const BOOK_FORM_FIELDS = {
 };
 
 async function getAllBooks() {
+  const container = document.getElementById('book-table');
+  showLoading(container);
   try {
     renderBookTable(await apiFetch('/api/books'));
   } catch (err) {
-    alert(`載入書籍失敗：${err.message}`);
+    container.innerHTML = '<p class="text-danger mb-0">書籍載入失敗</p>';
+    showToast(`載入書籍失敗：${err.message}`, 'danger');
   }
 }
 
@@ -37,7 +40,7 @@ function renderBookTable(books) {
         <td class="text-price">${escapeHtml(book.salePrice)}</td>
         <td class="text-end text-nowrap">
           <a class="btn btn-sm btn-outline-primary" href="/book/book.html?id=${encodeURIComponent(book.id)}">編輯</a>
-          <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${escapeHtml(book.id)}">刪除</button>
+          <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${escapeHtml(book.id)}" data-title="${escapeHtml(book.title)}">刪除</button>
         </td>
       </tr>`,
     )
@@ -65,23 +68,33 @@ async function createBook() {
 
   try {
     await apiFetch('/api/books', { method: 'POST', body: book });
-    alert('新增成功');
+    showToast(`已新增《${book.title}》`);
     document.getElementById('create-book-form').reset();
     getAllBooks();
   } catch (err) {
-    alert(`新增失敗：${err.message}`);
+    showToast(`新增失敗：${err.message}`, 'danger');
   }
 }
 
-async function deleteBook(id) {
-  if (!confirm(`確定要刪除書籍 ${id} 嗎?`)) return;
-  try {
-    await apiFetch(`/api/books/${id}`, { method: 'DELETE' });
-    alert('刪除成功');
-    getAllBooks();
-  } catch (err) {
-    alert(`刪除失敗：${err.message}`);
-  }
+// 刪除按鈕帶有 data-id 與 data-title（title 用來在確認對話框顯示刪的是哪一本）
+async function deleteBook(btn) {
+  // dataset 讀的是 data-* 屬性：data-title → dataset.title
+  const { id, title } = btn.dataset;
+  const ok = await confirmDialog(`確定要刪除《${title}》嗎？刪除後無法復原。`, {
+    title: '刪除書籍',
+    confirmText: '刪除',
+  });
+  if (!ok) return;
+  // 使用者確認後才讓按鈕進入載入中；若在確認前就轉圈，取消時畫面會很奇怪
+  await withLoading(btn, async () => {
+    try {
+      await apiFetch(`/api/books/${id}`, { method: 'DELETE' });
+      showToast(`已刪除《${title}》`);
+      getAllBooks();
+    } catch (err) {
+      showToast(`刪除失敗：${err.message}`, 'danger');
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -89,15 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   getAllBooks();
 
-  document.getElementById('create-book-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    createBook();
-  });
+  // 驗證、防連點、按鈕載入中都由 common.js 的 onFormSubmit 處理
+  onFormSubmit(document.getElementById('create-book-form'), createBook);
 
   // 事件委派（event delegation）：表格每次重新渲染都會換掉裡面的按鈕，
   // 所以把監聽器掛在不會被換掉的外層容器上，再用 data-action 判斷點了哪個按鈕。
   document.getElementById('book-table').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action="delete"]');
-    if (btn) deleteBook(btn.dataset.id);
+    if (btn) deleteBook(btn);
   });
 });
