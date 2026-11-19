@@ -95,6 +95,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
+		<!-- AOP：用來自動記錄 Controller / Service 方法的執行階段（見 logging/ExecutionLoggingAspect） -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
 
 
 	</dependencies>

@@ -27,18 +27,21 @@ public class GlobalExceptionHandler {
     /** 查無資料 → 404。 */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException e) {
+        log.warn("查無資料: {}", e.getMessage());
         return build(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
     /** 資料重複，例如用戶名已存在 → 409 Conflict。 */
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateResourceException e) {
+        log.warn("資料重複: {}", e.getMessage());
         return build(HttpStatus.CONFLICT, e.getMessage());
     }
 
     /** 請求參數不合法 → 400。 */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException e) {
+        log.warn("請求參數不合法: {}", e.getMessage());
         return build(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
@@ -48,6 +51,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorized(AuthenticationException e) {
+        log.warn("認證失敗: {}", e.getMessage());
         return build(HttpStatus.UNAUTHORIZED, "帳號或密碼錯誤，或尚未登入");
     }
 

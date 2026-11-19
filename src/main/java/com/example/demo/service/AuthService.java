@@ -25,6 +25,8 @@ import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 認證相關的商業邏輯：登入、註冊、重設密碼、刷新 token。
  *
@@ -32,6 +34,7 @@ import com.example.demo.security.JwtTokenProvider;
  * （Hibernate 會省略變更檢查，效能較好）；會寫入資料的方法再個別標上 {@code @Transactional} 覆蓋成可寫入。
  * 同一個交易中的操作要嘛全部成功、要嘛全部回滾（rollback）。</p>
  */
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class AuthService {
@@ -71,6 +74,7 @@ public class AuthService {
     public TokenResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        log.info("用戶登入成功: {}", authentication.getName());
         return new TokenResponse(jwtTokenProvider.generateToken((UserDetails) authentication.getPrincipal()));
     }
 
@@ -94,6 +98,7 @@ public class AuthService {
         user.setEnabled(true);
         user.setRoles(Set.of(defaultRole));
         userRepository.save(user);
+        log.info("新用戶註冊: {}", user.getUsername());
     }
 
     /**
@@ -109,6 +114,7 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("用戶不存在"));
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+        log.info("用戶已重設密碼: {}", user.getUsername());
     }
 
     /**

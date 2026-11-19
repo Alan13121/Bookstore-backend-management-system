@@ -3,6 +3,7 @@ package com.example.demo.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * 重設密碼的請求內容（POST /api/auth/reset-password）。
@@ -17,5 +18,6 @@ public class ResetPasswordRequest {
     private String username;
 
     @Schema(description = "新密碼", example = "newPassword123")
+    @ToString.Exclude // 不讓密碼出現在 toString()，否則記錄參數的 log 會印出明碼
     private String newPassword;
 }
