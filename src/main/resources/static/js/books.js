@@ -20,7 +20,7 @@ async function getAllBooks() {
 function renderBookTable(books) {
   const container = document.getElementById('book-table');
   if (!books || books.length === 0) {
-    container.innerHTML = '<p>沒有書籍資料</p>';
+    container.innerHTML = '<p class="text-secondary mb-0">目前沒有書籍資料</p>';
     return;
   }
 
@@ -29,25 +29,26 @@ function renderBookTable(books) {
     .map(
       (book) => `
       <tr>
-        <td>${escapeHtml(book.id)}</td>
-        <td>${escapeHtml(book.title)}</td>
+        <td class="text-secondary">${escapeHtml(book.id)}</td>
+        <td class="fw-semibold">${escapeHtml(book.title)}</td>
         <td>${escapeHtml(book.author)}</td>
-        <td>${escapeHtml(book.description)}</td>
-        <td>${escapeHtml(book.listPrice)}</td>
-        <td>${escapeHtml(book.salePrice)}</td>
-        <td>
-          <button type="button" data-action="delete" data-id="${escapeHtml(book.id)}">刪除</button>
-          <a href="/book/book.html?id=${encodeURIComponent(book.id)}">更改</a>
+        <td class="text-secondary small">${escapeHtml(book.description)}</td>
+        <td class="text-price">${escapeHtml(book.listPrice)}</td>
+        <td class="text-price">${escapeHtml(book.salePrice)}</td>
+        <td class="text-end text-nowrap">
+          <a class="btn btn-sm btn-outline-primary" href="/book/book.html?id=${encodeURIComponent(book.id)}">編輯</a>
+          <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${escapeHtml(book.id)}">刪除</button>
         </td>
       </tr>`,
     )
     .join('');
 
   container.innerHTML = `
-    <table border="1">
+    <table class="table table-hover align-middle mb-0">
       <thead>
         <tr>
-          <th>ID</th><th>書名</th><th>作者</th><th>簡述</th><th>定價</th><th>售價</th><th>Action</th>
+          <th>ID</th><th>書名</th><th>作者</th><th>簡述</th>
+          <th class="text-end">定價</th><th class="text-end">售價</th><th class="text-end">操作</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>

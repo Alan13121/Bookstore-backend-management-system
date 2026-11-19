@@ -11,7 +11,7 @@ async function getAllUsers() {
 function renderUserTable(users) {
   const container = document.getElementById('user-table');
   if (!users || users.length === 0) {
-    container.innerHTML = '<p>沒有用戶資料</p>';
+    container.innerHTML = '<p class="text-secondary mb-0">目前沒有用戶資料</p>';
     return;
   }
 
@@ -19,23 +19,23 @@ function renderUserTable(users) {
     .map(
       (user) => `
       <tr>
-        <td>${escapeHtml(user.id)}</td>
-        <td>${escapeHtml(user.username)}</td>
+        <td class="text-secondary">${escapeHtml(user.id)}</td>
+        <td class="fw-semibold">${escapeHtml(user.username)}</td>
         <td>${escapeHtml(user.fullName)}</td>
         <td>${escapeHtml(user.phone)}</td>
         <td>${escapeHtml(user.email)}</td>
-        <td>
-          <button type="button" data-action="delete" data-id="${escapeHtml(user.id)}">刪除</button>
-          <a href="/user/user.html?id=${encodeURIComponent(user.id)}">更改</a>
+        <td class="text-end text-nowrap">
+          <a class="btn btn-sm btn-outline-primary" href="/user/user.html?id=${encodeURIComponent(user.id)}">編輯</a>
+          <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${escapeHtml(user.id)}">刪除</button>
         </td>
       </tr>`,
     )
     .join('');
 
   container.innerHTML = `
-    <table border="1">
+    <table class="table table-hover align-middle mb-0">
       <thead>
-        <tr><th>ID</th><th>Username</th><th>Full Name</th><th>Phone</th><th>Email</th><th>Action</th></tr>
+        <tr><th>ID</th><th>帳號</th><th>姓名</th><th>電話</th><th>Email</th><th class="text-end">操作</th></tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>`;

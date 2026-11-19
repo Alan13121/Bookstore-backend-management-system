@@ -113,16 +113,31 @@ function roleLabel(name) {
 
 // 在 container 內為每個角色產生一個勾選框，checkedNames 中的角色預設勾選。
 // 用 createElement 而不是組 HTML 字串，角色名稱就不需要另外跳脫。
+// 套用 Bootstrap 的 form-check 結構：<div class="form-check"><input><label for></div>，
+// label 的 for 指向 input 的 id，點文字也能勾選。id 需全頁唯一，
+// 而 roles.html 會為每個用戶各畫一組，所以用計數器產生不重複的 id。
+let roleCheckboxSeq = 0;
+
 function renderRoleCheckboxes(container, roles, checkedNames = []) {
   container.innerHTML = '';
   roles.forEach((role) => {
-    const label = document.createElement('label');
+    const wrapper = document.createElement('div');
+    wrapper.className = 'form-check form-check-inline';
+
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
+    checkbox.className = 'form-check-input';
+    checkbox.id = `role-checkbox-${++roleCheckboxSeq}`;
     checkbox.value = role.id;
     checkbox.checked = checkedNames.includes(role.name);
-    label.append(checkbox, ' ' + roleLabel(role.name));
-    container.append(label, document.createElement('br'));
+
+    const label = document.createElement('label');
+    label.className = 'form-check-label';
+    label.htmlFor = checkbox.id;
+    label.textContent = roleLabel(role.name);
+
+    wrapper.append(checkbox, label);
+    container.append(wrapper);
   });
 }
 

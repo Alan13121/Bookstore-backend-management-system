@@ -1,0 +1,255 @@
+/* ============================================================
+ * 書店暖色調主題（疊加在 Bootstrap 5 之上）
+ *
+ * 為什麼這樣做：
+ * Bootstrap 5 的顏色、圓角、字體幾乎都是 CSS 變數（--bs-*），
+ * 所以不必改 Bootstrap 原始碼或重新編譯 Sass，只要在「之後」載入這支檔案、
+ * 覆寫同名變數，整套元件（按鈕、表格、表單、卡片）就會換成我們的配色。
+ * 載入順序很重要：每個 HTML 都是先 <link> bootstrap.min.css，再 <link> 這支。
+ * ============================================================ */
+
+/* ---------- 1. 色票：集中定義，之後要換色只改這裡 ---------- */
+:root {
+  --shop-paper: #f6efe2; /* 頁面底色：像舊書頁的米白 */
+  --shop-surface: #fffaf2; /* 卡片底色：比頁面稍亮，做出層次 */
+  --shop-ink: #3b2a1e; /* 主要文字：深咖啡，比純黑柔和 */
+  --shop-ink-muted: #7a6450; /* 次要文字 */
+  --shop-leather: #8b5a2b; /* 主色：皮革書封的棕 */
+  --shop-leather-dark: #6f4520; /* 主色 hover / active */
+  --shop-leather-rgb: 139, 90, 43;
+  --shop-forest: #2f5d50; /* 輔助色：墨綠，用在成功 / 次要強調 */
+  --shop-brick: #a63d2f; /* 危險色：磚紅，用在刪除 */
+  --shop-brick-dark: #86301f;
+  --shop-line: #e4d6bf; /* 邊框、分隔線 */
+  --shop-heading-font: 'Noto Serif TC', 'Songti TC', 'PMingLiU', serif;
+
+  /* ---------- 2. 把色票接到 Bootstrap 的全域變數 ---------- */
+  --bs-body-bg: var(--shop-paper);
+  --bs-body-color: var(--shop-ink);
+  --bs-secondary-color: var(--shop-ink-muted);
+  --bs-border-color: var(--shop-line);
+  --bs-primary: var(--shop-leather);
+  --bs-primary-rgb: var(--shop-leather-rgb);
+  --bs-link-color: var(--shop-leather);
+  --bs-link-color-rgb: var(--shop-leather-rgb);
+  --bs-link-hover-color: var(--shop-leather-dark);
+  --bs-link-hover-color-rgb: 111, 69, 32;
+  --bs-border-radius: 0.5rem;
+  --bs-focus-ring-color: rgba(var(--shop-leather-rgb), 0.25);
+}
+
+/* ---------- 3. 元件層級的變數 ----------
+ * 按鈕、表格等元件在 Bootstrap 裡有「自己的」變數（例如 --bs-btn-bg），
+ * 它們在編譯時就寫死成預設藍色，不會跟著 --bs-primary 變，所以要個別覆寫。 */
+.btn-primary {
+  --bs-btn-bg: var(--shop-leather);
+  --bs-btn-border-color: var(--shop-leather);
+  --bs-btn-hover-bg: var(--shop-leather-dark);
+  --bs-btn-hover-border-color: var(--shop-leather-dark);
+  --bs-btn-active-bg: var(--shop-leather-dark);
+  --bs-btn-active-border-color: var(--shop-leather-dark);
+  --bs-btn-disabled-bg: var(--shop-leather);
+  --bs-btn-disabled-border-color: var(--shop-leather);
+  --bs-btn-focus-shadow-rgb: var(--shop-leather-rgb);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--shop-leather);
+  --bs-btn-border-color: var(--shop-leather);
+  --bs-btn-hover-bg: var(--shop-leather);
+  --bs-btn-hover-border-color: var(--shop-leather);
+  --bs-btn-active-bg: var(--shop-leather-dark);
+  --bs-btn-active-border-color: var(--shop-leather-dark);
+  --bs-btn-focus-shadow-rgb: var(--shop-leather-rgb);
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--shop-brick);
+  --bs-btn-border-color: var(--shop-brick);
+  --bs-btn-hover-bg: var(--shop-brick);
+  --bs-btn-hover-border-color: var(--shop-brick);
+  --bs-btn-active-bg: var(--shop-brick-dark);
+  --bs-btn-active-border-color: var(--shop-brick-dark);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--shop-ink-muted);
+  --bs-btn-border-color: var(--shop-line);
+  --bs-btn-hover-color: var(--shop-ink);
+  --bs-btn-hover-bg: #efe3cf;
+  --bs-btn-hover-border-color: #d8c6a8;
+  --bs-btn-active-bg: #e6d6bb;
+  --bs-btn-active-border-color: #d8c6a8;
+  --bs-btn-active-color: var(--shop-ink);
+}
+
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--shop-ink);
+  --bs-table-border-color: var(--shop-line);
+  --bs-table-hover-bg: rgba(var(--shop-leather-rgb), 0.06);
+  --bs-table-hover-color: var(--shop-ink);
+}
+
+.table thead th {
+  color: var(--shop-ink-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-bottom-width: 2px;
+  white-space: nowrap;
+}
+
+.card {
+  --bs-card-bg: var(--shop-surface);
+  --bs-card-border-color: var(--shop-line);
+  --bs-card-cap-bg: transparent;
+  box-shadow: 0 1px 2px rgba(59, 42, 30, 0.06);
+}
+
+.form-control,
+.form-select {
+  background-color: #fffdf8;
+  border-color: var(--shop-line);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: rgba(var(--shop-leather-rgb), 0.6);
+  box-shadow: 0 0 0 0.25rem var(--bs-focus-ring-color);
+}
+
+.form-check-input:checked {
+  background-color: var(--shop-leather);
+  border-color: var(--shop-leather);
+}
+
+.form-check-input:focus {
+  border-color: rgba(var(--shop-leather-rgb), 0.6);
+  box-shadow: 0 0 0 0.25rem var(--bs-focus-ring-color);
+}
+
+/* ---------- 4. 書店風格的小細節 ---------- */
+
+/* 標題用襯線字（宋體 / 明體），內文維持 Bootstrap 的無襯線字，閱讀較輕鬆 */
+h1,
+h2,
+h3,
+h4,
+.navbar-brand,
+.card-title {
+  font-family: var(--shop-heading-font);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* 頂部導覽列：深咖啡底，像書架的木頭 */
+.shop-navbar {
+  background: #3b2a1e;
+  border-bottom: 4px solid var(--shop-leather);
+}
+
+.shop-navbar .navbar-brand {
+  color: #f6efe2;
+}
+
+.shop-navbar .navbar-brand:hover {
+  color: #fff;
+}
+
+.shop-navbar .nav-link,
+.shop-navbar .btn-link {
+  color: #e4d6bf;
+  text-decoration: none;
+}
+
+.shop-navbar .nav-link:hover,
+.shop-navbar .btn-link:hover {
+  color: #fff;
+}
+
+/* 頁面標題區：標題下方一條細細的「書籤線」 */
+.page-title {
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--shop-line);
+}
+
+.page-title h1 {
+  font-size: 1.75rem;
+  margin: 0;
+}
+
+/* 卡片標題前的短色條，讓區塊更好辨認 */
+.card-header {
+  border-bottom-color: var(--shop-line);
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+.card-header h2 {
+  font-size: 1.15rem;
+  margin: 0;
+  padding-left: 0.6rem;
+  border-left: 4px solid var(--shop-leather);
+}
+
+/* 登入 / 註冊這類單一表單頁：卡片置中 */
+.auth-wrapper {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* 首頁的功能入口卡片：滑過時微微浮起 */
+.menu-card {
+  display: block;
+  height: 100%;
+  color: var(--shop-ink);
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.menu-card:hover {
+  color: var(--shop-ink);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(59, 42, 30, 0.12);
+}
+
+.menu-card .menu-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+/* 首頁橫幅 */
+.hero {
+  background: linear-gradient(135deg, #efe2cb 0%, #f6efe2 60%);
+  border: 1px solid var(--shop-line);
+  border-radius: var(--bs-border-radius-lg);
+}
+
+/* 錯誤 / 訊息輸出區：原本是 <pre>，改成柔和的提示框且有內容才顯示 */
+.output-box:empty {
+  display: none;
+}
+
+/* 權限規則的 URL pattern 用等寬字，比較好對齊閱讀 */
+.font-monospace-input {
+  font-family: var(--bs-font-monospace);
+  font-size: 0.875rem;
+}
+
+/* 價格欄靠右，數字比較好比較 */
+.text-price {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

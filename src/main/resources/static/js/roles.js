@@ -12,25 +12,35 @@ let allRoles = [];
 
 // 產生「輸入框 + 更新 / 刪除按鈕」的清單項目，角色與規則清單共用。
 // 按鈕帶 data-action，點擊由外層 <ul> 的事件委派統一處理。
+// 外觀用 Bootstrap 的 list-group-item 與 input-group（輸入框和按鈕黏成一排）。
 function createEditableItem(id, inputs) {
   const li = document.createElement('li');
+  li.className = 'list-group-item';
   li.dataset.id = id;
-  inputs.forEach(({ name, value }) => {
+
+  const group = document.createElement('div');
+  group.className = 'input-group input-group-sm';
+  inputs.forEach(({ name, value, className = '' }) => {
     const input = document.createElement('input');
     input.name = name;
     input.value = value ?? '';
-    li.append(input, ' ');
+    input.className = `form-control ${className}`;
+    input.setAttribute('aria-label', name);
+    group.append(input);
   });
   [
-    ['update', '更新'],
-    ['delete', '刪除'],
-  ].forEach(([action, text]) => {
+    ['update', '更新', 'btn-outline-primary'],
+    ['delete', '刪除', 'btn-outline-danger'],
+  ].forEach(([action, text, style]) => {
     const btn = document.createElement('button');
     btn.type = 'button';
+    btn.className = `btn ${style}`;
     btn.dataset.action = action;
     btn.textContent = text;
-    li.append(btn, ' ');
+    group.append(btn);
   });
+
+  li.append(group);
   return li;
 }
 
@@ -63,28 +73,39 @@ async function loadUserRoles() {
   }
 }
 
+// 外層 col 讓卡片在格線（row）裡排成多欄：md 兩欄、xl 三欄
 function createUserCard(user) {
+  const col = document.createElement('div');
+  col.className = 'col-md-6 col-xl-4';
+
   const card = document.createElement('div');
-  card.className = 'user-card';
+  card.className = 'card h-100';
+  const body = document.createElement('div');
+  body.className = 'card-body d-flex flex-column';
 
   const header = document.createElement('h3');
+  header.className = 'h6 card-title mb-1';
   header.textContent = `👤 ${user.username}`;
 
   const currentRoles = document.createElement('p');
-  currentRoles.textContent = `現有角色: ${user.roles?.slice().sort().join(', ') || '無角色'}`;
-
-  const hint = document.createElement('p');
-  hint.textContent = '勾選下列選項，以更改用戶角色：';
+  currentRoles.className = 'small text-secondary mb-2';
+  currentRoles.textContent = `現有角色：${user.roles?.slice().sort().join(', ') || '無角色'}`;
 
   const checkboxArea = document.createElement('div');
+  checkboxArea.className = 'mb-3';
   renderRoleCheckboxes(checkboxArea, allRoles, user.roles || []);
 
   const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  // mt-auto：把按鈕推到卡片底部，各卡片高度不同時按鈕仍對齊
+  saveBtn.className = 'btn btn-sm btn-primary mt-auto align-self-start';
   saveBtn.textContent = '保存角色變更';
   saveBtn.addEventListener('click', () => saveUserRoles(user, checkboxArea));
 
-  card.append(header, currentRoles, hint, checkboxArea, saveBtn);
-  return card;
+  body.append(header, currentRoles, checkboxArea, saveBtn);
+  card.append(body);
+  col.append(card);
+  return col;
 }
 
 async function saveUserRoles(user, checkboxArea) {
@@ -179,7 +200,7 @@ async function loadRules() {
   rules.forEach((rule) => {
     list.appendChild(
       createEditableItem(rule.id, [
-        { name: 'urlPattern', value: rule.urlPattern },
+        { name: 'urlPattern', value: rule.urlPattern, className: 'font-monospace-input' },
         { name: 'roles', value: rule.roles },
       ]),
     );
