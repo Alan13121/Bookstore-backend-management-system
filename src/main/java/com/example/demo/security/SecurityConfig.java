@@ -6,24 +6,22 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.demo.util.DynamicAuthorizationFilter;
-import com.example.demo.util.JwtAuthenticationFilter;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
     private final DynamicAuthorizationFilter dynamicAuthorizationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, DynamicAuthorizationFilter dynamicAuthorizationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          DynamicAuthorizationFilter dynamicAuthorizationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.dynamicAuthorizationFilter = dynamicAuthorizationFilter;
     }
@@ -38,25 +36,17 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
+    /**
+     * 無狀態 JWT 設定：內建授權全部放行，
+     * 由 {@link JwtAuthenticationFilter} 驗證身分、{@link DynamicAuthorizationFilter} 依資料庫規則授權。
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-            // 停用CSRF
-        http.csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(authz -> authz
-                // 這裡不用內建的過濾器 直接都交給 dynamicAuthorizationFilter 處理規則
-                .anyRequest().permitAll()
-            )
-            // 無狀態
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
-
-        //  JWT 驗證 Filter（先驗證身份）
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        //  動態授權 Filter（後續比對角色）
-        http.addFilterAfter(dynamicAuthorizationFilter, JwtAuthenticationFilter.class);
-
+        http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authz -> authz.anyRequest().permitAll())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(dynamicAuthorizationFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 }

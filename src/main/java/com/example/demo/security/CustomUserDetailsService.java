@@ -1,4 +1,4 @@
-package com.example.demo.service;
+package com.example.demo.security;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -7,8 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.repository.UserRepository;
 
-
-
+/** 提供 Spring Security 以用戶名載入用戶。 */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 

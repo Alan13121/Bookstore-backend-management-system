@@ -18,8 +18,8 @@ async function register() {
     alert(message);
     return;
   }
-  const text = await res.text();
-  document.getElementById('output').textContent = text;
-  alert(text);
+  const { message } = await res.json();
+  document.getElementById('output').textContent = message;
+  alert(message);
   window.location.href = '/index.html';
 }

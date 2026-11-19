@@ -78,4 +78,14 @@ class RoleControllerTest {
         mockMvc.perform(requestBuilder)
                 .andExpect(status().is(204));
     }
+
+    @Test
+    @Transactional
+    void deleteRoleNotFound() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .delete("/api/roles/{id}", 9999);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNotFound());
+    }
 }

@@ -6,20 +6,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+@Data
 @Entity
 @Table(name = "url_role_mapping")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class UrlRoleMapping {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String urlPattern;  // e.g., /api/books/.*
-    private String roles;       // e.g., ADMIN,STAFF
+    /** URL 比對規則（regex），例如 {@code /api/books/.*}。 */
+    private String urlPattern;
+
+    /** 允許的角色，逗號分隔，例如 {@code ADMIN,STAFF}。 */
+    private String roles;
 }

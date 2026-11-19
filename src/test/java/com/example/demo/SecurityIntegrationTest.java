@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.entity.Role;
 import com.example.demo.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@org.springframework.transaction.annotation.Transactional
+@Transactional
 class SecurityIntegrationTest {
 
     @Autowired
@@ -118,9 +122,10 @@ class SecurityIntegrationTest {
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk());
 
-        assertEquals(java.util.Set.of("STAFF"),
+        assertEquals(Set.of("STAFF"),
                 userRepository.findByUsername("newbie").orElseThrow().getRoles().stream()
-                        .map(r -> r.getName()).collect(java.util.stream.Collectors.toSet()));
+                        .map(Role::getName)
+                        .collect(Collectors.toSet()));
 
         String token = login("newbie", "pw123456");
         mvc.perform(get("/api/books").header("Authorization", "Bearer " + token))

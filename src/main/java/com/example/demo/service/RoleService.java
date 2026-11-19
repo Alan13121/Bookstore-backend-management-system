@@ -1,17 +1,19 @@
 package com.example.demo.service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.RoleCreateRequest;
-import com.example.demo.dto.RoleDto;
+import com.example.demo.dto.RoleResponse;
+import com.example.demo.dto.RoleUpdateRequest;
 import com.example.demo.entity.Role;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.RoleRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class RoleService {
 
     private final RoleRepository roleRepository;
@@ -20,44 +22,50 @@ public class RoleService {
         this.roleRepository = roleRepository;
     }
 
-    private RoleDto toDto(Role role) {
-        RoleDto dto = new RoleDto();
-        dto.setId(role.getId());
-        dto.setName(role.getName());
-        return dto;
-    }
-
-    public List<RoleDto> getAllRoles() {
+    public List<RoleResponse> getAllRoles() {
         return roleRepository.findAll().stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Optional<RoleDto> getRoleById(Integer id) {
-        return roleRepository.findById(id)
-                .map(this::toDto);
+    public RoleResponse getRoleById(Integer id) {
+        return toResponse(findRole(id));
     }
 
-    public RoleDto createRole(RoleCreateRequest request) {
+    @Transactional
+    public RoleResponse createRole(RoleCreateRequest request) {
         Role role = new Role();
         role.setName(request.getName());
-        return toDto(roleRepository.save(role));
+        return toResponse(roleRepository.save(role));
     }
 
-    public RoleDto updateRole(Integer id, RoleCreateRequest request) {
-        return roleRepository.findById(id)
-            .map(role -> {
-                role.setName(request.getName());
-                return toDto(roleRepository.save(role));
-            })
-            .orElseThrow(() -> new IllegalArgumentException("找不到角色，ID: " + id));
+    @Transactional
+    public RoleResponse updateRole(Integer id, RoleUpdateRequest request) {
+        Role role = findRole(id);
+        role.setName(request.getName());
+        return toResponse(roleRepository.save(role));
     }
 
-    public boolean deleteRole(Integer id) {
-        if (roleRepository.existsById(id)) {
-            roleRepository.deleteById(id);
-            return true;
+    @Transactional
+    public void deleteRole(Integer id) {
+        if (!roleRepository.existsById(id)) {
+            throw notFound(id);
         }
-        return false;
+        roleRepository.deleteById(id);
+    }
+
+    private Role findRole(Integer id) {
+        return roleRepository.findById(id).orElseThrow(() -> notFound(id));
+    }
+
+    private ResourceNotFoundException notFound(Integer id) {
+        return new ResourceNotFoundException("找不到角色，ID: " + id);
+    }
+
+    private RoleResponse toResponse(Role role) {
+        RoleResponse response = new RoleResponse();
+        response.setId(role.getId());
+        response.setName(role.getName());
+        return response;
     }
 }

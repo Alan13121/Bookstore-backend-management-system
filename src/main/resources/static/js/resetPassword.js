@@ -15,7 +15,8 @@ async function resetPassword() {
     return;
   }
 
-  document.getElementById('output').textContent = await res.text();
+  const { message } = await res.json();
+  document.getElementById('output').textContent = message;
   alert('密碼重設成功');
   window.location.href = 'login.html';
 }

@@ -1,4 +1,4 @@
-package com.example.demo.util;
+package com.example.demo.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
 
 import jakarta.servlet.FilterChain;
@@ -25,13 +26,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.example.demo.entity.UrlRoleMapping;
+import com.example.demo.dto.UrlRoleMappingResponse;
 import com.example.demo.service.UrlRoleMappingService;
 
 class DynamicAuthorizationFilterTest {
 
     @Mock
-    private UrlRoleMappingService mappingService;
+    private UrlRoleMappingService urlRoleMappingService;
 
     @Mock
     private FilterChain chain;
@@ -46,10 +47,10 @@ class DynamicAuthorizationFilterTest {
         MockitoAnnotations.openMocks(this);
         SecurityContextHolder.clearContext();
         response = new MockHttpServletResponse();
-        when(mappingService.getAll()).thenReturn(List.of(
-                new UrlRoleMapping(1L, "/api/books/.*", "ADMIN,STAFF"),
-                new UrlRoleMapping(2L, "/api/users/.*", "ADMIN"),
-                new UrlRoleMapping(3L, "/a_office/.*", "A-MANAGER")));
+        when(urlRoleMappingService.getAllMappings()).thenReturn(List.of(
+                rule("/api/books/.*", "ADMIN,STAFF"),
+                rule("/api/users/.*", "ADMIN"),
+                rule("/a_office/.*", "A-MANAGER")));
     }
 
     @AfterEach
@@ -57,8 +58,15 @@ class DynamicAuthorizationFilterTest {
         SecurityContextHolder.clearContext();
     }
 
+    private static UrlRoleMappingResponse rule(String urlPattern, String roles) {
+        UrlRoleMappingResponse mapping = new UrlRoleMappingResponse();
+        mapping.setUrlPattern(urlPattern);
+        mapping.setRoles(roles);
+        return mapping;
+    }
+
     private void loginAs(String... roles) {
-        List<SimpleGrantedAuthority> authorities = java.util.Arrays.stream(roles)
+        List<SimpleGrantedAuthority> authorities = Arrays.stream(roles)
                 .map(r -> new SimpleGrantedAuthority("ROLE_" + r)).toList();
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken("u", null, authorities));
@@ -81,7 +89,7 @@ class DynamicAuthorizationFilterTest {
         filter.doFilterInternal(req, response, chain);
 
         verify(chain).doFilter(req, response);
-        verifyNoInteractions(mappingService);
+        verifyNoInteractions(urlRoleMappingService);
         assertEquals(200, response.getStatus());
     }
 
@@ -146,8 +154,7 @@ class DynamicAuthorizationFilterTest {
 
     @Test
     void doubleStarIsTreatedAsRegexWildcard() throws Exception {
-        when(mappingService.getAll()).thenReturn(
-                List.of(new UrlRoleMapping(9L, "/secret/**", "ADMIN")));
+        when(urlRoleMappingService.getAllMappings()).thenReturn(List.of(rule("/secret/**", "ADMIN")));
         loginAs("STAFF");
 
         filter.doFilterInternal(get("/secret/a/b"), response, chain);

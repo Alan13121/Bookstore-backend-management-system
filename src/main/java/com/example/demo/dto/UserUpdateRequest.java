@@ -7,10 +7,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(description = "用戶更新請求資料")
-public class UpdateUserRequest {
+@Schema(name = "UserUpdateRequest", description = "更新用戶請求（欄位為 null 表示不修改）")
+public class UserUpdateRequest {
 
-    @Schema(description = "暱稱", example = "Jerry")
+    @Schema(description = "用戶名", example = "jerry")
     private String username;
 
     @Schema(description = "全名", example = "Jerry Chen")

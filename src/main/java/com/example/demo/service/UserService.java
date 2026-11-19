@@ -6,23 +6,25 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dto.CreateUserRequest;
-import com.example.demo.dto.UpdateUserRequest;
+import com.example.demo.dto.UserCreateRequest;
 import com.example.demo.dto.UserResponse;
+import com.example.demo.dto.UserUpdateRequest;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // 建構子注入
     public UserService(UserRepository userRepository,
                        RoleRepository roleRepository,
                        PasswordEncoder passwordEncoder) {
@@ -31,39 +33,31 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // 查詢所有啟用的用戶
-    public List<User> getAllActiveUsers() {
-        return userRepository.findByEnabledTrue();
+    public List<UserResponse> getAllUsers() {
+        return toResponses(userRepository.findAll());
     }
 
-    // 依使用者名稱模糊查詢
-    public List<User> searchUsersByUsername(String keyword) {
-        return userRepository.findByUsernameContaining(keyword);
+    public List<UserResponse> getAllActiveUsers() {
+        return toResponses(userRepository.findByEnabledTrue());
     }
 
-    // 取得使用者的角色(字串)
-    public String getRolesByIdToString(Integer id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("找不到用戶，ID: " + id));
-        return user.getRoles()
-                .stream()
+    public List<UserResponse> searchUsersByUsername(String keyword) {
+        return toResponses(userRepository.findByUsernameContaining(keyword));
+    }
+
+    public UserResponse getUserById(Integer id) {
+        return toResponse(findUser(id));
+    }
+
+    /** 取得用戶的角色名稱，以逗號分隔。 */
+    public String getUserRoleNames(Integer id) {
+        return findUser(id).getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.joining(","));
     }
 
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::toUserResponse)
-                .toList();
-    }
-
-    public UserResponse getUserById(Integer id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("找不到用戶，ID: " + id));
-        return toUserResponse(user);
-    }
-
-    public UserResponse createUser(CreateUserRequest request) {
+    @Transactional
+    public UserResponse createUser(UserCreateRequest request) {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -71,57 +65,77 @@ public class UserService {
         user.setPhone(request.getPhone());
         user.setEmail(request.getEmail());
         user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
-
         if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
-            Set<Role> roles = request.getRoleIds().stream()
-                    .map(id -> roleRepository.findById(id)
-                            .orElseThrow(() -> new IllegalArgumentException("角色ID不存在: " + id)))
-                    .collect(Collectors.toSet());
-            user.setRoles(roles);
+            user.setRoles(findRoles(request.getRoleIds()));
         }
-
-        return toUserResponse(userRepository.save(user));
+        return toResponse(userRepository.save(user));
     }
 
-    public UserResponse updateUser(Integer id, UpdateUserRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("找不到用戶，ID: " + id));
-
-        if (request.getUsername() != null) user.setUsername(request.getUsername());
-        if (request.getFullName() != null) user.setFullName(request.getFullName());
-        if (request.getPhone() != null) user.setPhone(request.getPhone());
-        if (request.getEmail() != null) user.setEmail(request.getEmail());
-        if (request.getEnabled() != null) user.setEnabled(request.getEnabled());
-
-        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
-            Set<Role> roles = request.getRoleIds().stream()
-                    .map(roleId -> roleRepository.findById(roleId)
-                            .orElseThrow(() -> new IllegalArgumentException("角色ID不存在: " + roleId)))
-                    .collect(Collectors.toSet());
-            user.setRoles(roles);
+    /** 只更新非 null 的欄位。 */
+    @Transactional
+    public UserResponse updateUser(Integer id, UserUpdateRequest request) {
+        User user = findUser(id);
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
         }
-
-        return toUserResponse(userRepository.save(user));
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getEnabled() != null) {
+            user.setEnabled(request.getEnabled());
+        }
+        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
+            user.setRoles(findRoles(request.getRoleIds()));
+        }
+        return toResponse(userRepository.save(user));
     }
 
+    @Transactional
     public void deleteUser(Integer id) {
         if (!userRepository.existsById(id)) {
-            throw new IllegalArgumentException("找不到用戶，ID: " + id);
+            throw notFound(id);
         }
         userRepository.deleteById(id);
     }
 
-    private UserResponse toUserResponse(User user) {
-        UserResponse dto = new UserResponse();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setFullName(user.getFullName());
-        dto.setPhone(user.getPhone());
-        dto.setEmail(user.getEmail());
-        dto.setEnabled(user.getEnabled());
-        dto.setRoles(user.getRoles().stream()
+    private User findUser(Integer id) {
+        return userRepository.findById(id).orElseThrow(() -> notFound(id));
+    }
+
+    private Set<Role> findRoles(Set<Integer> roleIds) {
+        return roleIds.stream()
+                .map(roleId -> roleRepository.findById(roleId)
+                        .orElseThrow(() -> new ResourceNotFoundException("找不到角色，ID: " + roleId)))
+                .collect(Collectors.toSet());
+    }
+
+    private ResourceNotFoundException notFound(Integer id) {
+        return new ResourceNotFoundException("找不到用戶，ID: " + id);
+    }
+
+    private List<UserResponse> toResponses(List<User> users) {
+        return users.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private UserResponse toResponse(User user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setFullName(user.getFullName());
+        response.setPhone(user.getPhone());
+        response.setEmail(user.getEmail());
+        response.setEnabled(user.getEnabled());
+        response.setRoles(user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet()));
-        return dto;
+        return response;
     }
 }

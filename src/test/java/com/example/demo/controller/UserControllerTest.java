@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,7 +31,8 @@ class UserControllerTest {
         mockMvc.perform(requestBuilder)
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].password").doesNotExist());
     }
 
     @Test
@@ -43,11 +44,12 @@ class UserControllerTest {
         mockMvc.perform(requestBuilder)
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$[0].username", equalTo("admin")))
+                .andExpect(jsonPath("$[0].password").doesNotExist());
     }
 
     @Test
-    void getRolesByIdToString() throws Exception {
+    void getUserRoleNames() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .get("/api/users/{id}/roles", 1);
 

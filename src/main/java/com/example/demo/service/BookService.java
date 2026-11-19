@@ -1,18 +1,19 @@
 package com.example.demo.service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.BookCreateRequest;
-import com.example.demo.dto.BookDto;
+import com.example.demo.dto.BookResponse;
 import com.example.demo.dto.BookUpdateRequest;
 import com.example.demo.entity.Book;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.BookRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class BookService {
 
     private final BookRepository bookRepository;
@@ -21,55 +22,62 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
-    // 將 Entity 轉換成 DTO
-    private BookDto toDto(Book book) {
-        BookDto dto = new BookDto();
-        dto.setId(book.getId());
-        dto.setTitle(book.getTitle());
-        dto.setAuthor(book.getAuthor());
-        dto.setDescription(book.getDescription());
-        dto.setListPrice(book.getListPrice());
-        dto.setSalePrice(book.getSalePrice());
-        return dto;
+    public List<BookResponse> getAllBooks() {
+        return bookRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public List<BookDto> getAllBooks() {
-        return bookRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public BookResponse getBookById(Integer id) {
+        return toResponse(findBook(id));
     }
 
-    public Optional<BookDto> getBookById(Integer id) {
-        return bookRepository.findById(id).map(this::toDto);
-    }
-
-    public BookDto createBook(BookCreateRequest request) {
+    @Transactional
+    public BookResponse createBook(BookCreateRequest request) {
         Book book = new Book();
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
         book.setDescription(request.getDescription());
         book.setListPrice(request.getListPrice());
         book.setSalePrice(request.getSalePrice());
-        return toDto(bookRepository.save(book));
+        return toResponse(bookRepository.save(book));
     }
 
-    public Optional<BookDto> updateBook(Integer id,BookUpdateRequest request) {
-        return bookRepository.findById(id).map(b -> {
-            b.setTitle(request.getTitle());
-            b.setAuthor(request.getAuthor());
-            b.setDescription(request.getDescription());
-            b.setListPrice(request.getListPrice());
-            b.setSalePrice(request.getSalePrice());
-            return toDto(bookRepository.save(b));
-        });
+    @Transactional
+    public BookResponse updateBook(Integer id, BookUpdateRequest request) {
+        Book book = findBook(id);
+        book.setTitle(request.getTitle());
+        book.setAuthor(request.getAuthor());
+        book.setDescription(request.getDescription());
+        book.setListPrice(request.getListPrice());
+        book.setSalePrice(request.getSalePrice());
+        return toResponse(bookRepository.save(book));
     }
 
-    public boolean deleteBook(Integer id) {
-        if (bookRepository.existsById(id)) {
-            bookRepository.deleteById(id);
-            return true;
+    @Transactional
+    public void deleteBook(Integer id) {
+        if (!bookRepository.existsById(id)) {
+            throw notFound(id);
         }
-        return false;
+        bookRepository.deleteById(id);
+    }
+
+    private Book findBook(Integer id) {
+        return bookRepository.findById(id).orElseThrow(() -> notFound(id));
+    }
+
+    private ResourceNotFoundException notFound(Integer id) {
+        return new ResourceNotFoundException("找不到書籍，ID: " + id);
+    }
+
+    private BookResponse toResponse(Book book) {
+        BookResponse response = new BookResponse();
+        response.setId(book.getId());
+        response.setTitle(book.getTitle());
+        response.setAuthor(book.getAuthor());
+        response.setDescription(book.getDescription());
+        response.setListPrice(book.getListPrice());
+        response.setSalePrice(book.getSalePrice());
+        return response;
     }
 }

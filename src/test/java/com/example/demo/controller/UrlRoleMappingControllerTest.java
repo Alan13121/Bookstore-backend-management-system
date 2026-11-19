@@ -17,14 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class RoleMappingControllerTest {
+class UrlRoleMappingControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void getAll() throws Exception {
+    void getAllMappings() throws Exception {
         RequestBuilder requestBuilder = MockMvcRequestBuilders
                 .get("/api/roles/mappings");
 
@@ -82,6 +82,19 @@ class RoleMappingControllerTest {
                 .delete("/api/roles/mappings/{id}", 1);
 
         mockMvc.perform(requestBuilder)
-                .andExpect(status().isOk());
+                .andExpect(status().is(204));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @Transactional
+    void updateMappingNotFound() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/api/roles/mappings/{id}", 9999)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"urlPattern\":\"/x\",\"roles\":\"ADMIN\"}");
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNotFound());
     }
 }
