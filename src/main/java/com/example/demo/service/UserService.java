@@ -13,6 +13,7 @@ import com.example.demo.dto.UserResponse;
 import com.example.demo.dto.UserUpdateRequest;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
+import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
@@ -66,6 +67,15 @@ public class UserService {
     /** 管理員新增用戶，可以直接指定角色與是否啟用。 */
     @Transactional
     public UserResponse createUser(UserCreateRequest request) {
+        // 先檢查用戶名是否重複，與 AuthService.register 相同做法。
+        // 為什麼不直接依賴資料庫的 unique constraint？因為那樣會在 save 時丟出
+        // DataIntegrityViolationException，GlobalExceptionHandler 沒有對應處理 → 回 500，
+        // 前端無法分辨是「資料衝突」還是「伺服器壞了」。主動檢查並丟 DuplicateResourceException，
+        // 才能回 409 Conflict 與清楚的錯誤訊息。（資料庫的 unique constraint 仍保留作為最後防線，
+        // 處理兩個請求同時新增同名用戶這種極少見的競態情況。）
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new DuplicateResourceException("用戶名已存在");
+        }
         User user = new User();
         user.setUsername(request.getUsername());
         // 密碼一定要先加密再存，資料庫只保存 BCrypt 雜湊值
@@ -86,6 +96,12 @@ public class UserService {
     public UserResponse updateUser(Integer id, UserUpdateRequest request) {
         User user = findUser(id);
         if (request.getUsername() != null) {
+            // 只有「真的改了用戶名」才需要檢查重複：若傳入的是自己原本的名字，
+            // existsByUsername 會找到自己而誤判為重複，所以先比對是否與目前的值不同。
+            if (!request.getUsername().equals(user.getUsername())
+                    && userRepository.existsByUsername(request.getUsername())) {
+                throw new DuplicateResourceException("用戶名已存在");
+            }
             user.setUsername(request.getUsername());
         }
         if (request.getFullName() != null) {

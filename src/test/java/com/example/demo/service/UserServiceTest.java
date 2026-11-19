@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dto.UserCreateRequest;
 import com.example.demo.dto.UserResponse;
 import com.example.demo.dto.UserUpdateRequest;
+import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.ResourceNotFoundException;
 
 @SpringBootTest
@@ -92,5 +93,41 @@ class UserServiceTest {
         ResourceNotFoundException ex =
                 assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser(1));
         assertEquals("找不到用戶，ID: 1", ex.getMessage());
+    }
+
+    @Test
+    @Transactional
+    void createUserWithDuplicateUsername() {
+        // data.sql 已有 admin，用同名新增應丟出 DuplicateResourceException（→ 409），
+        // 而不是等到 save 時才因 unique constraint 丟 DataIntegrityViolationException（→ 500）
+        UserCreateRequest request = new UserCreateRequest();
+        request.setUsername("admin");
+        request.setPassword("5555");
+
+        DuplicateResourceException ex =
+                assertThrows(DuplicateResourceException.class, () -> userService.createUser(request));
+        assertEquals("用戶名已存在", ex.getMessage());
+    }
+
+    @Test
+    @Transactional
+    void updateUserWithDuplicateUsername() {
+        // 把用戶 1（admin）改名成已存在的 staff → 應被擋下
+        UserUpdateRequest request = new UserUpdateRequest();
+        request.setUsername("staff");
+
+        DuplicateResourceException ex =
+                assertThrows(DuplicateResourceException.class, () -> userService.updateUser(1, request));
+        assertEquals("用戶名已存在", ex.getMessage());
+    }
+
+    @Test
+    @Transactional
+    void updateUserWithSameUsername() {
+        // 傳入自己原本的用戶名不算重複，應正常更新
+        UserUpdateRequest request = new UserUpdateRequest();
+        request.setUsername("admin");
+
+        assertEquals("admin", userService.updateUser(1, request).getUsername());
     }
 }

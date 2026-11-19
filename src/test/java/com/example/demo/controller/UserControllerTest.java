@@ -136,4 +136,40 @@ class UserControllerTest {
                 .andDo(print())
                 .andExpect(status().is(204));
     }
+
+    @Test
+    @Transactional
+    void createUserWithDuplicateUsername() throws Exception {
+        // admin 已存在於測試資料，應回 409 與統一的錯誤格式
+        String jsonBody = "{ \"username\": \"admin\", \"password\": \"123456\", \"fullName\": \"Dup\", \"email\": \"dup@example.com\", \"phone\": \"0911222333\" }";
+
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonBody);
+
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", equalTo(409)))
+                .andExpect(jsonPath("$.message", equalTo("用戶名已存在")));
+    }
+
+    @Test
+    @Transactional
+    void updateUserWithDuplicateUsername() throws Exception {
+        // 把用戶 1 改名成已存在的 staff → 409
+        String jsonBody = "{ \"username\": \"staff\" }";
+
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/api/users/{id}", 1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonBody);
+
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", equalTo(409)))
+                .andExpect(jsonPath("$.message", equalTo("用戶名已存在")));
+    }
 }
