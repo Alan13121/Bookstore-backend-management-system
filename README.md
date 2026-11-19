@@ -197,6 +197,7 @@ com.example.demo
 ├── dto          # 請求 / 回應物件
 ├── exception    # 自訂例外與 GlobalExceptionHandler
 ├── security     # SecurityConfig、JWT、動態授權 Filter
+├── logging      # Request / Response 與方法執行階段的 log
 └── config       # 其他設定（OpenAPI）
 ```
 
@@ -216,6 +217,37 @@ com.example.demo
 - 未登入 / 帳密錯誤 → 401；參數不合法（`IllegalArgumentException`）→ 400
 - 錯誤回應格式一律為 `{ "status": 404, "message": "..." }`
 - 刪除成功一律回 `204 No Content`
+
+**Log**
+
+查看即時 log：
+
+```bash
+docker-compose logs -f springboot
+```
+
+每個 API 請求都會有一組 requestId（下例的 `[440ab24c]`），同一個請求從進入、經過 Controller / Service、執行 SQL 到回應的所有 log 都帶著同一個 id，回應 Header `X-Request-Id` 也會帶上它：
+
+```
+INFO  [440ab24c] RequestLoggingFilter   : → GET /api/books/99
+DEBUG [440ab24c] ExecutionLoggingAspect : ▶ BookController.getBookById(99)
+DEBUG [440ab24c] ExecutionLoggingAspect :   ▶ BookService.getBookById(99)
+DEBUG [440ab24c] org.hibernate.SQL      : select ... from books b1_0 where b1_0.id=?
+DEBUG [440ab24c] ExecutionLoggingAspect :   ✖ BookService.getBookById 丟出 ResourceNotFoundException: 找不到書籍，ID: 99 (4 ms)
+DEBUG [440ab24c] ExecutionLoggingAspect : ✖ BookController.getBookById 丟出 ResourceNotFoundException: 找不到書籍，ID: 99 (5 ms)
+WARN  [440ab24c] GlobalExceptionHandler : 查無資料: 找不到書籍，ID: 99
+INFO  [440ab24c] RequestLoggingFilter   : ← 404 GET /api/books/99 (50 ms)
+DEBUG [440ab24c] RequestLoggingFilter   :   response body: {"status":404,"message":"找不到書籍，ID: 99"}
+```
+
+只想找某一個請求的 log：
+
+```bash
+docker-compose logs springboot | grep 440ab24c
+```
+
+- body 中的 `password`、`newPassword`、`token` 會顯示為 `***`；靜態頁面與 Swagger 不會被記錄
+- 等級設定在 `application.properties` 的 `logging.level.*`：`com.example.demo=INFO` 只留下請求摘要，`DEBUG` 才會顯示 body 與方法執行階段
 
 **格式**：提交前執行 `mvn spotless:apply`（4 空白縮排、import 依 java → jakarta → javax → org → com → io → lombok 排序，不使用萬用字元 import）。
 

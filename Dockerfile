@@ -13,6 +13,9 @@ RUN mvn clean package -DskipTests
 # --- Stage 2: Run the app ---
 FROM eclipse-temurin:17-jdk
 
+# 指定 UTF-8 語系，log 中的中文才不會變成 ???
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
 WORKDIR /app
 
 # 從上一階段複製 jar

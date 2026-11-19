@@ -43,6 +43,7 @@ public class User implements UserDetails {
     private String username;
 
     /** BCrypt 雜湊後的密碼，不是明碼。 */
+    @ToString.Exclude // 雜湊值也不該出現在 log 中
     private String password;
 
     @Column(name = "full_name")
