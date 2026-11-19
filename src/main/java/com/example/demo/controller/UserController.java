@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+/** 用戶管理 API（預設規則：僅 ADMIN 可存取）。 */
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/users")
@@ -28,12 +29,17 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * ⚠ 直接回傳 User Entity，JSON 中會包含 password 雜湊等內部欄位，建議改回傳 UserResponse。
+     * 另外 "/active" 是固定路徑，Spring 會優先比對它，所以不會被誤認為 "/{id}"。
+     */
     @Operation(summary = "查詢所有啟用中的用戶")
     @GetMapping("/active")
     public List<User> getAllActiveUsers() {
         return userService.getAllActiveUsers();
     }
 
+    /** GET /api/users/search?keyword=xxx：{@code @RequestParam} 取得網址 ? 後面的查詢參數。 */
     @Operation(summary = "依帳號關鍵字搜尋用戶")
     @GetMapping("/search")
     public List<User> searchUsers(@RequestParam String keyword) {
@@ -74,6 +80,7 @@ public class UserController {
         return userService.updateUser(id, request);
     }
 
+    /** 成功回 204；找不到時 Service 丟出例外 → 404。 */
     @Operation(summary = "刪除用戶")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(

@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 回傳給前端的角色資料 DTO。
+ */
 @Data
 @Schema(description = "角色資料")
 public class RoleDto {

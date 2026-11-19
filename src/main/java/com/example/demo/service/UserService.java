@@ -15,6 +15,9 @@ import com.example.demo.entity.User;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 
+/**
+ * 用戶管理的業務邏輯層（給管理員使用；一般註冊流程在 AuthService）。
+ */
 @Service
 public class UserService {
 
@@ -32,11 +35,12 @@ public class UserService {
     }
 
     // 查詢所有啟用的用戶
+    // ⚠ 直接回傳 Entity，JSON 會包含 password 雜湊，建議改成回傳 UserResponse
     public List<User> getAllActiveUsers() {
         return userRepository.findByEnabledTrue();
     }
 
-    // 依使用者名稱模糊查詢
+    // 依使用者名稱模糊查詢（同樣直接回傳 Entity，有相同問題）
     public List<User> searchUsersByUsername(String keyword) {
         return userRepository.findByUsernameContaining(keyword);
     }
@@ -51,27 +55,33 @@ public class UserService {
                 .collect(Collectors.joining(","));
     }
 
+    /** 查詢所有用戶（含停用），轉成不含密碼的 UserResponse。 */
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::toUserResponse)
                 .toList();
     }
 
+    /** 依 id 查詢用戶；找不到丟 IllegalArgumentException → 404。 */
     public UserResponse getUserById(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("找不到用戶，ID: " + id));
         return toUserResponse(user);
     }
 
+    /** 管理員新增用戶，可直接指定角色與啟用狀態。 */
     public UserResponse createUser(CreateUserRequest request) {
         User user = new User();
         user.setUsername(request.getUsername());
+        // 密碼一定要先加密再存，資料庫中只保存 BCrypt 雜湊值
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.setEmail(request.getEmail());
+        // 沒有指定時預設為啟用
         user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
 
+        // 把角色 id 清單轉成 Role 物件；任何一個 id 不存在就整筆失敗
         if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
             Set<Role> roles = request.getRoleIds().stream()
                     .map(id -> roleRepository.findById(id)
@@ -83,6 +93,10 @@ public class UserService {
         return toUserResponse(userRepository.save(user));
     }
 
+    /**
+     * 更新用戶（部分更新）：只有 request 中不是 null 的欄位才會被修改。
+     * 角色清單若有傳入，會整組取代原本的角色。
+     */
     public UserResponse updateUser(Integer id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("找不到用戶，ID: " + id));
@@ -104,6 +118,7 @@ public class UserService {
         return toUserResponse(userRepository.save(user));
     }
 
+    /** 刪除用戶；找不到丟 IllegalArgumentException → 404。 */
     public void deleteUser(Integer id) {
         if (!userRepository.existsById(id)) {
             throw new IllegalArgumentException("找不到用戶，ID: " + id);
@@ -111,6 +126,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    /** Entity → DTO：刻意不複製 password，角色只取名稱。 */
     private UserResponse toUserResponse(User user) {
         UserResponse dto = new UserResponse();
         dto.setId(user.getId());

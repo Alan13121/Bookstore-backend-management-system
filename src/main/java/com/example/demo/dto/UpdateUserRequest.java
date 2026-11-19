@@ -6,6 +6,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 更新用戶的請求 DTO（PUT /api/users/{id}）。
+ * <p>採「部分更新」：欄位為 null 代表不修改（見 {@code UserService.updateUser}）。
+ * 這裡不包含密碼，密碼另外透過重設密碼流程處理。</p>
+ */
 @Data
 @Schema(description = "用戶更新請求資料")
 public class UpdateUserRequest {

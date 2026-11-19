@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 公開版的 URL ↔ 角色 規則（不含 id），給前端決定要顯示哪些選單。
+ */
 @Data
 @Schema(name = "PublicRoleMappingDto", description = "公開版角色訪問規則")
 @NoArgsConstructor

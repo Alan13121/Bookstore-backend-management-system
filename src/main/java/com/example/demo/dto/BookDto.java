@@ -6,6 +6,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 回傳給前端的書籍資料 DTO。
+ * <p>由 {@code BookService.toDto()} 從 {@code Book} Entity 轉換而來。</p>
+ */
 @Data
 @Schema(name = "BookDto", description = "書籍資料")
 public class BookDto {

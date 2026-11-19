@@ -6,6 +6,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
+/**
+ * 新增書籍請求 DTO（POST /api/books）。
+ * <p>沒有 id 欄位：id 由資料庫自動產生，不該由前端決定。</p>
+ */
 @Data
 @Schema(name = "BookCreateRequest", description = "新增書籍請求")
 public class BookCreateRequest {
