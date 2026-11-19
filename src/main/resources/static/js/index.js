@@ -1,110 +1,83 @@
-// 權限檢查
-async function canAccess(url, userRoles, urlRoleMapping) {
-  try {
-    const mappings = urlRoleMapping;
-    for (const mapping of mappings) {
-      if (new RegExp(mapping.urlPattern).test(url)) {
-        const allowedRoles = mapping.roles.split(',');
-        if (userRoles.some((r) => allowedRoles.includes(r))) {
-          return true;
-        }
-      }
+// 首頁：依登入者的角色動態產生選單。
+// 注意：選單只是「顯示」層面的過濾，真正的權限檢查在後端 DynamicAuthorizationFilter，
+// 就算使用者自己改網址進入頁面，頁面裡呼叫的 API 仍會被後端擋下。
+
+const MENU_ITEMS = [
+  { url: '/book/', label: '📖 書籍管理', page: '/book/books.html' },
+  { url: '/user/', label: '👤 用戶管理', page: '/user/users.html' },
+  { url: '/api/roles/', label: '🛡️ 角色權限管理', page: '/user/roles.html' },
+  { url: '/a_office/', label: 'A部門', page: '/a_office/a_office.html' },
+  { url: '/b_office/', label: 'B部門', page: '/b_office/b_office.html' },
+  { url: '/c_office/', label: 'C部門', page: '/c_office/c_office.html' },
+];
+
+const GUEST_MENU_HTML = `
+  <li><a href="/auth/login.html">🔐 登入</a></li>
+  <li><a href="/auth/register.html">👥 註冊</a></li>
+`;
+
+// 是否有任一條規則同時符合網址與使用者角色
+function canAccess(url, userRoles, mappings) {
+  return mappings.some((mapping) => {
+    try {
+      if (!new RegExp(mapping.urlPattern).test(url)) return false;
+    } catch (e) {
+      console.error('規則不是合法的正規表示式：', mapping.urlPattern);
+      return false;
     }
-    return false;
-  } catch (e) {
-    console.error('檢查權限錯誤', e);
-    return false;
-  }
+    const allowedRoles = mapping.roles.split(',').map((r) => r.trim());
+    return userRoles.some((r) => allowedRoles.includes(r));
+  });
 }
 
-// 獲得後臺權限清單
+// 取得公開的權限規則清單（未登入也能呼叫），失敗時回傳空陣列
 async function getMappingList() {
   try {
-    const res = await fetch('/api/roles/mappings/public', { headers: authHeader() });
-    if (!res.ok) {
-      console.error('錯誤：' + res.status);
-      return null;
-    }
-
-    const mappings = await res.json();
-    return mappings;
+    return await apiFetch('/api/roles/mappings/public');
   } catch (e) {
-    console.error('無法獲取訪問規則', e);
-    return null;
+    console.error('無法取得權限規則', e);
+    return [];
   }
 }
 
-// 動態產生選單按鈕
-async function addMenuItemIfAuthorized({ url, label, page }, userRoles, menu, urlRoleMapping) {
-  if (await canAccess(url, userRoles, urlRoleMapping)) {
-    const li = document.createElement('li');
-    const link = document.createElement('a');
-    link.textContent = label;
-    link.href = page;
-    li.appendChild(link);
-    menu.appendChild(li);
-  }
-}
-
-// 登出
 function logout() {
-  localStorage.removeItem('token');
+  clearToken();
   alert('已登出');
   location.reload();
 }
 
-// 初始化選單
 async function initMenu() {
-  await refreshToken();
   const menu = document.getElementById('menu');
-  menu.innerHTML = ''; // 清空
 
-  const token = localStorage.getItem('token');
-  if (!token) {
-    // 未登入
-    menu.innerHTML = `
-        <li><a href="/auth/login.html">🔐 登入</a></li>
-        <li><a href="/auth/register.html">👥 註冊</a></li>
-    `;
-    return;
-  }
-
-  const user = decodeToken(token);
+  // 先嘗試延長 token；過期或解不開都視為未登入
+  await refreshToken();
+  const user = isTokenValid() ? decodeToken(getToken()) : null;
   if (!user || !user.roles) {
-    // Token 無效
-    localStorage.removeItem('token');
-    menu.innerHTML = `
-        <li><a href="/auth/login.html">🔐 登入</a></li>
-        <li><a href="/auth/register.html">👥 註冊</a></li>
-    `;
+    clearToken();
+    menu.innerHTML = GUEST_MENU_HTML;
     return;
   }
 
+  // token 裡的角色帶有 ROLE_ 前綴（Spring Security 的慣例），規則裡則沒有
   const userRoles = user.roles.map((r) => r.replace(/^ROLE_/, ''));
+  const mappings = await getMappingList();
 
-  // 已登入，加入登出按鈕
-  menu.innerHTML = `<button id="logoutBtn">🚪 登出</button>`;
-  document.getElementById('logoutBtn').onclick = logout;
+  menu.innerHTML = '';
+  const logoutBtn = document.createElement('button');
+  logoutBtn.textContent = '🚪 登出';
+  logoutBtn.addEventListener('click', logout);
+  menu.appendChild(logoutBtn);
 
-  // 定義選單項目
-  const menuItems = [
-    { url: '/book/', label: '📖 書籍管理', page: '/book/books.html' },
-    { url: '/user/', label: '👤 用戶管理', page: '/user/users.html' },
-    { url: '/api/roles/', label: '🛡️ 角色權限管理', page: '/user/roles.html' },
-    { url: '/a_office/', label: 'A部門', page: '/a_office/a_office.html' },
-    { url: '/b_office/', label: 'B部門', page: '/b_office/b_office.html' },
-    { url: '/c_office/', label: 'C部門', page: '/c_office/c_office.html' },
-  ];
-
-  const urlRoleMapping = await getMappingList();
-
-  // 檢查權限並顯示可見的按鈕
-  for (const item of menuItems) {
-    await addMenuItemIfAuthorized(item, userRoles, menu, urlRoleMapping);
-  }
+  MENU_ITEMS.filter((item) => canAccess(item.url, userRoles, mappings)).forEach((item) => {
+    const li = document.createElement('li');
+    const link = document.createElement('a');
+    link.textContent = item.label;
+    link.href = item.page;
+    li.appendChild(link);
+    menu.appendChild(li);
+  });
 }
 
-// 保證每次進入頁面（含上一頁 BFCache）都會刷新。
-window.addEventListener('pageshow', function (event) {
-  initMenu();
-});
+// 用 pageshow 而不是 DOMContentLoaded：按「上一頁」回到首頁時，瀏覽器可能直接從
+// BFCache 還原頁面而不會重新觸發 DOMContentLoaded，pageshow 則每次都會觸發。
+window.addEventListener('pageshow', initMenu);

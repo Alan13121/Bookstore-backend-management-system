@@ -1,78 +1,57 @@
-let allRoles = [];
+// 用戶編輯頁：載入角色清單與用戶資料，送出時以 PUT 部分更新（UserUpdateRequest）
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadRoles().then(loadUserData);
-  document.querySelector('#edit-user-form').addEventListener('submit', submitForm);
-});
-
-async function loadRoles() {
-  const res = await fetch('/api/roles', { headers: authHeader() });
-  const roles = await res.json();
-  allRoles = roles;
-  const rolesContainer = document.querySelector('#roles');
-  rolesContainer.innerHTML = '';
-  const roleMap = { ROLE_ADMIN: '管理員', ROLE_STAFF: '員工', ROLE_WORKER: '作業員' };
-
-  roles.forEach((role) => {
-    const label = document.createElement('label');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = role.id;
-    label.appendChild(checkbox);
-    label.append(' ' + (roleMap[role.name] || role.name));
-    rolesContainer.appendChild(label);
-    rolesContainer.appendChild(document.createElement('br'));
-  });
+function fillUserForm(user, roles) {
+  document.getElementById('user-id').textContent = user.id;
+  document.getElementById('username').value = user.username || '';
+  document.getElementById('fullName').value = user.fullName || '';
+  document.getElementById('phone').value = user.phone || '';
+  document.getElementById('email').value = user.email || '';
+  document.getElementById('enabled').value = String(user.enabled);
+  document.getElementById('current-roles').textContent =
+    (user.roles || []).map(roleLabel).join(', ') || '無';
+  renderRoleCheckboxes(document.getElementById('roles'), roles, user.roles || []);
 }
 
-async function loadUserData() {
-  const userId = new URLSearchParams(window.location.search).get('id');
-  if (!userId) return (location.href = '/user/users.html');
-  const res = await fetch(`/api/users/${userId}`, { headers: authHeader() });
-  const user = await res.json();
-  fillUserForm(user);
-}
-
-function fillUserForm(user) {
-  document.querySelector('#user-id').textContent = user.id;
-  document.querySelector('#username').value = user.username || '';
-  document.querySelector('#fullName').value = user.fullName || '';
-  document.querySelector('#phone').value = user.phone || '';
-  document.querySelector('#email').value = user.email || '';
-  document.querySelector('#enabled').value = String(user.enabled);
-  document.querySelector('#current-roles').textContent = user.roles?.join(', ') || '無';
-
-  (user.roles || []).forEach((name) => {
-    const role = allRoles.find((r) => r.name === name);
-    const checkbox = role && document.querySelector(`#roles input[value="${role.id}"]`);
-    if (checkbox) checkbox.checked = true;
-  });
-}
-
-async function submitForm(e) {
-  e.preventDefault();
-  const userId = new URLSearchParams(window.location.search).get('id');
-  const roleIds = Array.from(document.querySelectorAll('#roles input:checked')).map((cb) =>
-    parseInt(cb.value),
-  );
+async function updateUser(userId) {
   const updatedUser = {
-    fullName: document.querySelector('#fullName').value,
-    phone: document.querySelector('#phone').value,
-    email: document.querySelector('#email').value,
-    enabled: document.querySelector('#enabled').value === 'true',
-    roleIds,
+    ...readFields({ fullName: 'fullName', phone: 'phone', email: 'email' }),
+    enabled: document.getElementById('enabled').value === 'true',
+    roleIds: getCheckedRoleIds(document.getElementById('roles')),
   };
 
-  const res = await fetch(`/api/users/${userId}`, {
-    method: 'PUT',
-    headers: { ...authHeader(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(updatedUser),
-  });
-
-  if (res.ok) {
+  try {
+    await apiFetch(`/api/users/${userId}`, { method: 'PUT', body: updatedUser });
     alert('更新成功');
     location.href = '/user/users.html';
-  } else {
-    alert('更新失敗');
+  } catch (err) {
+    alert(`更新失敗：${err.message}`);
   }
 }
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!checkAuthOrRedirect()) return;
+
+  const userId = getQueryParam('id');
+  if (!userId) {
+    location.href = '/user/users.html';
+    return;
+  }
+
+  try {
+    // 兩個請求互不相依，用 Promise.all 同時送出，比一個等一個快
+    const [roles, user] = await Promise.all([
+      apiFetch('/api/roles'),
+      apiFetch(`/api/users/${userId}`),
+    ]);
+    fillUserForm(user, roles);
+  } catch (err) {
+    alert(`載入用戶失敗：${err.message}`);
+    location.href = '/user/users.html';
+    return;
+  }
+
+  document.getElementById('edit-user-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    updateUser(userId);
+  });
+});

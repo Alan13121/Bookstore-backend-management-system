@@ -12,17 +12,16 @@
     <div id="book-table"></div>
 
     <h3>➕ 新增書籍</h3>
-    <input type="text" id="book-title" placeholder="書名" />
-    <input type="text" id="book-author" placeholder="作者" />
-    <input type="text" id="book-desc" placeholder="簡述" />
-    <input type="number" id="book-list-price" placeholder="定價" />
-    <input type="number" id="book-sale-price" placeholder="售價" />
-    <button onclick="createBook()">新增書籍</button>
+    <form id="create-book-form">
+      <input type="text" id="book-title" placeholder="書名" required />
+      <input type="text" id="book-author" placeholder="作者" />
+      <input type="text" id="book-desc" placeholder="簡述" />
+      <input type="number" id="book-list-price" placeholder="定價" min="0" step="any" />
+      <input type="number" id="book-sale-price" placeholder="售價" min="0" step="any" />
+      <button type="submit">新增書籍</button>
+    </form>
 
     <script src="/js/common.js"></script>
     <script src="/js/books.js"></script>
-    <script>
-      checkAuthOrRedirect();
-    </script>
   </body>
 </html>

@@ -1,51 +1,57 @@
+// 書籍編輯頁：從網址取得 id，載入資料填入表單，送出時以 PUT 更新
+
+const BOOK_FORM_FIELDS = {
+  title: 'book-title',
+  author: 'book-author',
+  description: 'book-desc',
+  listPrice: 'book-list-price',
+  salePrice: 'book-sale-price',
+};
+
+function fillBookForm(book) {
+  document.getElementById('book-id').textContent = book.id;
+  Object.entries(BOOK_FORM_FIELDS).forEach(([key, id]) => {
+    document.getElementById(id).value = book[key] ?? '';
+  });
+}
+
+async function updateBook(id) {
+  const fields = readFields(BOOK_FORM_FIELDS);
+  const book = {
+    ...fields,
+    listPrice: toNumberOrNull(fields.listPrice),
+    salePrice: toNumberOrNull(fields.salePrice),
+  };
+
+  try {
+    await apiFetch(`/api/books/${id}`, { method: 'PUT', body: book });
+    alert('更新成功');
+    location.href = '/book/books.html';
+  } catch (err) {
+    alert(`更新失敗：${err.message}`);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-  const id = new URLSearchParams(location.search).get('id');
+  if (!checkAuthOrRedirect()) return;
+
+  const id = getQueryParam('id');
   if (!id) {
     alert('缺少書籍 ID');
-    window.location.href = '/book/books.html';
+    location.href = '/book/books.html';
     return;
   }
 
-  // 載入書籍資料
   try {
-    const res = await fetch(`/api/books/${id}`, { headers: authHeader() });
-    if (!res.ok) throw new Error('找不到書籍');
-    const book = await res.json();
-    document.getElementById('book-id').textContent = book.id;
-    document.getElementById('book-title').value = book.title;
-    document.getElementById('book-author').value = book.author;
-    document.getElementById('book-desc').value = book.description;
-    document.getElementById('book-list-price').value = book.listPrice;
-    document.getElementById('book-sale-price').value = book.salePrice;
+    fillBookForm(await apiFetch(`/api/books/${id}`));
   } catch (err) {
-    alert(err.message);
-    window.location.href = '/book/books.html';
+    alert(`載入書籍失敗：${err.message}`);
+    location.href = '/book/books.html';
     return;
   }
 
-  // 表單提交處理
-  document.getElementById('edit-book-form').addEventListener('submit', async (e) => {
+  document.getElementById('edit-book-form').addEventListener('submit', (e) => {
     e.preventDefault();
-
-    const updatedBook = {
-      title: document.getElementById('book-title').value,
-      author: document.getElementById('book-author').value,
-      description: document.getElementById('book-desc').value,
-      listPrice: parseFloat(document.getElementById('book-list-price').value),
-      salePrice: parseFloat(document.getElementById('book-sale-price').value),
-    };
-
-    try {
-      const res = await fetch(`/api/books/${id}`, {
-        method: 'PUT',
-        headers: authHeader(),
-        body: JSON.stringify(updatedBook),
-      });
-      if (!res.ok) throw new Error('更新失敗');
-      alert('更新成功');
-      window.location.href = '/book/books.html';
-    } catch (err) {
-      alert(err.message);
-    }
+    updateBook(id);
   });
 });

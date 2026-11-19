@@ -1,13 +1,22 @@
-async function getBooks() {
-  const res = await fetch('/api/books', { headers: authHeader() });
-  if (!res.ok) {
-    alert('載入書籍失敗');
-    return;
+// 書籍列表頁：列出、新增、刪除書籍（編輯在 book.html）
+
+// 新增表單的欄位 id，對應 BookCreateRequest 的欄位名稱
+const BOOK_FORM_FIELDS = {
+  title: 'book-title',
+  author: 'book-author',
+  description: 'book-desc',
+  listPrice: 'book-list-price',
+  salePrice: 'book-sale-price',
+};
+
+async function getAllBooks() {
+  try {
+    renderBookTable(await apiFetch('/api/books'));
+  } catch (err) {
+    alert(`載入書籍失敗：${err.message}`);
   }
-  const data = await res.json();
-  renderBookTable(data);
 }
-// 印出所有書籍
+
 function renderBookTable(books) {
   const container = document.getElementById('book-table');
   if (!books || books.length === 0) {
@@ -15,24 +24,10 @@ function renderBookTable(books) {
     return;
   }
 
-  let html = `
-    <table border="1">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>書名</th>
-          <th>作者</th>
-          <th>簡述</th>
-          <th>定價</th>
-          <th>售價</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  books.forEach((book) => {
-    html += `
+  // 使用者輸入的資料一律經過 escapeHtml，避免書名裡的 <script> 之類被當成 HTML 執行
+  const rows = books
+    .map(
+      (book) => `
       <tr>
         <td>${escapeHtml(book.id)}</td>
         <td>${escapeHtml(book.title)}</td>
@@ -41,54 +36,67 @@ function renderBookTable(books) {
         <td>${escapeHtml(book.listPrice)}</td>
         <td>${escapeHtml(book.salePrice)}</td>
         <td>
-          <a href="#" onclick="deleteBook(${book.id})">刪除</a> 
-          <a href="/book/book.html?id=${book.id}" class="update-user">更改</a>
+          <button type="button" data-action="delete" data-id="${escapeHtml(book.id)}">刪除</button>
+          <a href="/book/book.html?id=${encodeURIComponent(book.id)}">更改</a>
         </td>
-      </tr>
-    `;
-  });
+      </tr>`,
+    )
+    .join('');
 
-  html += '</tbody></table>';
-
-  container.innerHTML = html;
+  container.innerHTML = `
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ID</th><th>書名</th><th>作者</th><th>簡述</th><th>定價</th><th>售價</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
-// 新增書籍
 async function createBook() {
+  const fields = readFields(BOOK_FORM_FIELDS);
   const book = {
-    title: document.getElementById('book-title').value,
-    author: document.getElementById('book-author').value,
-    description: document.getElementById('book-desc').value,
-    listPrice: parseFloat(document.getElementById('book-list-price').value),
-    salePrice: parseFloat(document.getElementById('book-sale-price').value),
+    ...fields,
+    listPrice: toNumberOrNull(fields.listPrice),
+    salePrice: toNumberOrNull(fields.salePrice),
   };
-  const res = await fetch('/api/books', {
-    method: 'POST',
-    headers: authHeader(),
-    body: JSON.stringify(book),
-  });
-  if (!res.ok) {
-    alert('新增失敗');
-    return;
+
+  try {
+    await apiFetch('/api/books', { method: 'POST', body: book });
+    alert('新增成功');
+    document.getElementById('create-book-form').reset();
+    getAllBooks();
+  } catch (err) {
+    alert(`新增失敗：${err.message}`);
   }
-  alert('新增成功');
-  getBooks();
 }
-// 刪除書籍
+
 async function deleteBook(id) {
   if (!confirm(`確定要刪除書籍 ${id} 嗎?`)) return;
-  const res = await fetch(`/api/books/${id}`, {
-    method: 'DELETE',
-    headers: authHeader(),
-  });
-
-  if (res.status === 204) {
+  try {
+    await apiFetch(`/api/books/${id}`, { method: 'DELETE' });
     alert('刪除成功');
-    getBooks();
-  } else {
-    alert('書籍不存在');
+    getAllBooks();
+  } catch (err) {
+    alert(`刪除失敗：${err.message}`);
   }
 }
+
 document.addEventListener('DOMContentLoaded', () => {
-  getBooks();
+  if (!checkAuthOrRedirect()) return;
+
+  getAllBooks();
+
+  document.getElementById('create-book-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    createBook();
+  });
+
+  // 事件委派（event delegation）：表格每次重新渲染都會換掉裡面的按鈕，
+  // 所以把監聽器掛在不會被換掉的外層容器上，再用 data-action 判斷點了哪個按鈕。
+  document.getElementById('book-table').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action="delete"]');
+    if (btn) deleteBook(btn.dataset.id);
+  });
 });

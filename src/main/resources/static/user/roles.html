@@ -2,50 +2,42 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>權限規則管理</title>
+    <title>🛡️ 角色權限管理</title>
+    <style>
+      .user-card {
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        padding: 10px;
+      }
+    </style>
   </head>
   <body>
     <h1>🛡️ 角色權限管理</h1>
     <a href="/index.html">返回首頁</a>
 
-    <h1>👥 用戶角色總覽</h1>
-    <div id="userRolesContainer"></div>
+    <h2>👥 用戶角色總覽</h2>
+    <div id="user-roles-container"></div>
 
-    <h1>🎭 角色管理</h1>
+    <h2>🎭 角色管理</h2>
+    <h3>新增角色</h3>
+    <form id="role-form">
+      <label>角色名稱: <input type="text" id="role-name" required /></label>
+      <button type="submit">新增</button>
+    </form>
+    <h3>現有角色</h3>
+    <ul id="role-list"></ul>
 
-    <div>
-      <h2>新增角色</h2>
-      <form id="roleForm2">
-        <label>角色名稱: <input type="text" id="roleName" required /></label><br />
-        <button type="submit">新增</button>
-      </form>
-    </div>
-
-    <div>
-      <h2>現有角色</h2>
-      <ul id="rolesList"></ul>
-    </div>
-
-    <h1>🔐 權限規則管理</h1>
-
-    <div>
-      <h2>新增規則</h2>
-      <form id="roleForm">
-        <label>URL Pattern: <input type="text" id="urlPattern" required /></label><br />
-        <label>Roles (逗號分隔): <input type="text" id="roles" required /></label><br />
-        <button type="submit">新增</button>
-      </form>
-    </div>
-
-    <div>
-      <h2>現有規則</h2>
-      <ul id="rulesList"></ul>
-    </div>
+    <h2>🔐 權限規則管理</h2>
+    <h3>新增規則</h3>
+    <form id="rule-form">
+      <label>URL Pattern: <input type="text" id="rule-url-pattern" required /></label><br />
+      <label>Roles (逗號分隔): <input type="text" id="rule-roles" required /></label><br />
+      <button type="submit">新增</button>
+    </form>
+    <h3>現有規則</h3>
+    <ul id="rule-list"></ul>
 
     <script src="/js/common.js"></script>
     <script src="/js/roles.js"></script>
-    <script>
-      checkAuthOrRedirect();
-    </script>
   </body>
 </html>

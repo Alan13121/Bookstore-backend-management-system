@@ -1,25 +1,22 @@
-async function register() {
-  const user = {
-    username: document.getElementById('reg-username').value,
-    password: document.getElementById('reg-password').value,
-    fullName: document.getElementById('reg-fullname').value,
-    email: document.getElementById('reg-email').value,
-    phone: document.getElementById('reg-phone').value,
-  };
-
-  const res = await fetch('/api/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(user),
+// 註冊：公開 API，新帳號由後端給予預設角色（AuthService 的 DEFAULT_ROLE）
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const output = document.getElementById('output');
+  const user = readFields({
+    username: 'reg-username',
+    password: 'reg-password',
+    fullName: 'reg-fullname',
+    email: 'reg-email',
+    phone: 'reg-phone',
   });
-  if (!res.ok) {
-    const message = await readErrorMessage(res, '註冊失敗');
-    document.getElementById('output').textContent = message;
+
+  try {
+    const { message } = await apiFetch('/api/auth/register', { method: 'POST', body: user });
+    output.textContent = message;
     alert(message);
-    return;
+    location.href = '/index.html';
+  } catch (err) {
+    output.textContent = err.message;
+    alert(err.message);
   }
-  const { message } = await res.json();
-  document.getElementById('output').textContent = message;
-  alert(message);
-  window.location.href = '/index.html';
-}
+});

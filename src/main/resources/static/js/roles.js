@@ -1,292 +1,253 @@
-const apiBase = '/api/roles/mappings';
-const roleApiBase = '/api/roles';
-const userApiBase = '/api/users';
+// 角色權限管理頁，分成三個區塊：
+// 1. 用戶角色總覽：為每個用戶勾選角色
+// 2. 角色管理：角色的新增 / 改名 / 刪除
+// 3. 權限規則管理：URL pattern 與可存取角色的對應（DynamicAuthorizationFilter 依此判斷權限）
 
-// === 全域角色清單（給角色總覽使用）===
+const RULE_API = '/api/roles/mappings';
+const ROLE_API = '/api/roles';
+const USER_API = '/api/users';
+
+// 目前所有角色；用戶角色總覽需要用它產生勾選框，所以角色有變動時要重新載入兩個區塊
 let allRoles = [];
 
-// ================================
-// 權限規則管理區塊
-// ================================
-
-// 新增規則
-document.getElementById('roleForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const urlPattern = document.getElementById('urlPattern').value.trim();
-  const roles = document.getElementById('roles').value.trim();
-
-  if (!urlPattern || !roles) {
-    alert('請完整輸入！');
-    return;
-  }
-
-  const res = await fetch(apiBase, {
-    method: 'POST',
-    headers: authHeader(),
-    body: JSON.stringify({ urlPattern, roles }),
+// 產生「輸入框 + 更新 / 刪除按鈕」的清單項目，角色與規則清單共用。
+// 按鈕帶 data-action，點擊由外層 <ul> 的事件委派統一處理。
+function createEditableItem(id, inputs) {
+  const li = document.createElement('li');
+  li.dataset.id = id;
+  inputs.forEach(({ name, value }) => {
+    const input = document.createElement('input');
+    input.name = name;
+    input.value = value ?? '';
+    li.append(input, ' ');
   });
+  [
+    ['update', '更新'],
+    ['delete', '刪除'],
+  ].forEach(([action, text]) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.action = action;
+    btn.textContent = text;
+    li.append(btn, ' ');
+  });
+  return li;
+}
 
-  if (res.ok) {
-    alert('新增成功');
-    document.getElementById('roleForm').reset();
-    loadRules();
-  } else {
-    alert('新增失敗');
-  }
-});
+// 讀取清單項目中某個輸入框的值
+function itemValue(li, name) {
+  return li.querySelector(`input[name="${name}"]`).value.trim();
+}
 
-// 載入規則
-async function loadRules() {
-  const res = await fetch(apiBase, { headers: authHeader() });
-  if (!res.ok) {
-    alert('載入規則失敗');
-    return;
-  }
-
-  const data = await res.json();
-  const list = document.getElementById('rulesList');
-  list.innerHTML = '';
-
-  data.forEach((rule) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <input value="${escapeHtml(rule.urlPattern)}" id="url-${rule.id}">
-      <input value="${escapeHtml(rule.roles)}" id="roles-${rule.id}">
-      <button onclick="updateRule(${rule.id})">更新</button>
-      <button onclick="deleteRule(${rule.id})">刪除</button>
-    `;
-    list.appendChild(li);
+// 事件委派（event delegation）：清單每次重新載入都會換掉裡面的按鈕，
+// 所以監聽器掛在不會被換掉的 <ul> 上，再依 data-action 決定要做什麼。
+function onListAction(listId, handlers) {
+  document.getElementById(listId).addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (btn) handlers[btn.dataset.action](btn.closest('li'));
   });
 }
 
-// 更新規則
-async function updateRule(id) {
-  const urlPattern = document.getElementById(`url-${id}`).value.trim();
-  const roles = document.getElementById(`roles-${id}`).value.trim();
+// ================================
+// 用戶角色總覽
+// ================================
 
-  if (!urlPattern || !roles) {
-    alert('請完整輸入！');
+async function loadUserRoles() {
+  const container = document.getElementById('user-roles-container');
+  try {
+    const users = await apiFetch(USER_API);
+    container.innerHTML = '';
+    users.forEach((user) => container.appendChild(createUserCard(user)));
+  } catch (err) {
+    alert(`無法載入用戶清單：${err.message}`);
+  }
+}
+
+function createUserCard(user) {
+  const card = document.createElement('div');
+  card.className = 'user-card';
+
+  const header = document.createElement('h3');
+  header.textContent = `👤 ${user.username}`;
+
+  const currentRoles = document.createElement('p');
+  currentRoles.textContent = `現有角色: ${user.roles?.slice().sort().join(', ') || '無角色'}`;
+
+  const hint = document.createElement('p');
+  hint.textContent = '勾選下列選項，以更改用戶角色：';
+
+  const checkboxArea = document.createElement('div');
+  renderRoleCheckboxes(checkboxArea, allRoles, user.roles || []);
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = '保存角色變更';
+  saveBtn.addEventListener('click', () => saveUserRoles(user, checkboxArea));
+
+  card.append(header, currentRoles, hint, checkboxArea, saveBtn);
+  return card;
+}
+
+async function saveUserRoles(user, checkboxArea) {
+  // UserUpdateRequest 是部分更新：只送 roleIds，其他欄位為 null 不會被修改
+  const roleIds = getCheckedRoleIds(checkboxArea);
+  try {
+    await apiFetch(`${USER_API}/${user.id}`, { method: 'PUT', body: { roleIds } });
+    alert(`用戶 ${user.username} 角色更新成功`);
+    loadUserRoles();
+  } catch (err) {
+    alert(`更新失敗：${err.message}`);
+  }
+}
+
+// ================================
+// 角色管理
+// ================================
+
+async function loadRoles() {
+  try {
+    allRoles = await apiFetch(ROLE_API);
+  } catch (err) {
+    alert(`載入角色失敗：${err.message}`);
     return;
   }
-
-  const res = await fetch(`${apiBase}/${id}`, {
-    method: 'PUT',
-    headers: authHeader(),
-    body: JSON.stringify({ urlPattern, roles }),
+  const list = document.getElementById('role-list');
+  list.innerHTML = '';
+  allRoles.forEach((role) => {
+    list.appendChild(createEditableItem(role.id, [{ name: 'name', value: role.name }]));
   });
+}
 
-  if (res.ok) {
+// 角色變動後，角色清單與用戶角色總覽都要更新（總覽要等 allRoles 更新完才能畫）
+async function reloadRolesAndUsers() {
+  await loadRoles();
+  await loadUserRoles();
+}
+
+async function createRole() {
+  const name = document.getElementById('role-name').value.trim();
+  if (!name) return alert('請輸入角色名稱！');
+
+  try {
+    await apiFetch(ROLE_API, { method: 'POST', body: { name } });
+    alert('新增角色成功');
+    document.getElementById('role-form').reset();
+    reloadRolesAndUsers();
+  } catch (err) {
+    alert(`新增角色失敗：${err.message}`);
+  }
+}
+
+async function updateRole(li) {
+  const name = itemValue(li, 'name');
+  if (!name) return alert('請輸入角色名稱！');
+
+  try {
+    await apiFetch(`${ROLE_API}/${li.dataset.id}`, { method: 'PUT', body: { name } });
+    alert('更新角色成功');
+    reloadRolesAndUsers();
+  } catch (err) {
+    alert(`更新角色失敗：${err.message}`);
+  }
+}
+
+async function deleteRole(li) {
+  if (!confirm(`確定要刪除角色 ${itemValue(li, 'name')} 嗎?`)) return;
+
+  try {
+    await apiFetch(`${ROLE_API}/${li.dataset.id}`, { method: 'DELETE' });
+    alert('刪除角色成功');
+    reloadRolesAndUsers();
+  } catch (err) {
+    alert(`刪除角色失敗：${err.message}`);
+  }
+}
+
+// ================================
+// 權限規則管理
+// ================================
+
+async function loadRules() {
+  let rules;
+  try {
+    rules = await apiFetch(RULE_API);
+  } catch (err) {
+    alert(`載入規則失敗：${err.message}`);
+    return;
+  }
+  const list = document.getElementById('rule-list');
+  list.innerHTML = '';
+  rules.forEach((rule) => {
+    list.appendChild(
+      createEditableItem(rule.id, [
+        { name: 'urlPattern', value: rule.urlPattern },
+        { name: 'roles', value: rule.roles },
+      ]),
+    );
+  });
+}
+
+async function createRule() {
+  const urlPattern = document.getElementById('rule-url-pattern').value.trim();
+  const roles = document.getElementById('rule-roles').value.trim();
+  if (!urlPattern || !roles) return alert('請完整輸入！');
+
+  try {
+    await apiFetch(RULE_API, { method: 'POST', body: { urlPattern, roles } });
+    alert('新增成功');
+    document.getElementById('rule-form').reset();
+    loadRules();
+  } catch (err) {
+    alert(`新增失敗：${err.message}`);
+  }
+}
+
+async function updateRule(li) {
+  const urlPattern = itemValue(li, 'urlPattern');
+  const roles = itemValue(li, 'roles');
+  if (!urlPattern || !roles) return alert('請完整輸入！');
+
+  try {
+    await apiFetch(`${RULE_API}/${li.dataset.id}`, {
+      method: 'PUT',
+      body: { urlPattern, roles },
+    });
     alert('更新成功');
     loadRules();
-  } else {
-    alert('更新失敗');
+  } catch (err) {
+    alert(`更新失敗：${err.message}`);
   }
 }
 
-// 刪除規則
-async function deleteRule(id) {
-  const res = await fetch(`${apiBase}/${id}`, {
-    method: 'DELETE',
-    headers: authHeader(),
-  });
-  if (res.ok) {
+async function deleteRule(li) {
+  if (!confirm(`確定要刪除規則 ${itemValue(li, 'urlPattern')} 嗎?`)) return;
+
+  try {
+    await apiFetch(`${RULE_API}/${li.dataset.id}`, { method: 'DELETE' });
     alert('刪除成功');
     loadRules();
-  } else {
-    alert('刪除失敗');
-  }
-}
-
-// ================================
-// 角色管理區塊
-// ================================
-
-// 新增角色
-document.getElementById('roleForm2').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const name = document.getElementById('roleName').value.trim();
-  if (!name) {
-    alert('請輸入角色名稱！');
-    return;
-  }
-
-  const res = await fetch(roleApiBase, {
-    method: 'POST',
-    headers: authHeader(),
-    body: JSON.stringify({ name }),
-  });
-
-  if (res.ok) {
-    alert('新增角色成功');
-    document.getElementById('roleForm2').reset();
-    await loadRoleList(); // 預設載入角色清單用在列表
-    await loadAllUsers(); // 同步更新角色總覽
-  } else {
-    alert('新增角色失敗');
-  }
-});
-
-// 載入角色列表（for 列表）
-async function loadRoleList() {
-  const res = await fetch(roleApiBase, { headers: authHeader() });
-  if (!res.ok) {
-    alert('載入角色失敗');
-    return;
-  }
-
-  const data = await res.json();
-  allRoles = data; // 更新全域角色清單
-
-  const list = document.getElementById('rolesList');
-  list.innerHTML = '';
-
-  data.forEach((role) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <input value="${escapeHtml(role.name)}" id="name-${role.id}">
-      <button onclick="updateRole(${role.id})">更新</button>
-      <button onclick="deleteRole(${role.id})">刪除</button>
-    `;
-    list.appendChild(li);
-  });
-}
-
-// 更新角色名稱
-async function updateRole(id) {
-  const name = document.getElementById(`name-${id}`).value.trim();
-  if (!name) {
-    alert('請輸入角色名稱！');
-    return;
-  }
-
-  const res = await fetch(`${roleApiBase}/${id}`, {
-    method: 'PUT',
-    headers: authHeader(),
-    body: JSON.stringify({ name }),
-  });
-
-  if (res.ok) {
-    alert('更新角色成功');
-    await loadRoleList();
-    await loadAllUsers();
-  } else {
-    alert('更新角色失敗');
-  }
-}
-
-// 刪除角色
-async function deleteRole(id) {
-  const res = await fetch(`${roleApiBase}/${id}`, {
-    method: 'DELETE',
-    headers: authHeader(),
-  });
-
-  if (res.ok) {
-    alert('刪除角色成功');
-    await loadRoleList();
-    await loadAllUsers();
-  } else {
-    alert('刪除角色失敗');
-  }
-}
-
-// ================================
-// 全部用戶角色總覽區塊
-// ================================
-
-// 載入所有用戶 + 勾選角色 checkbox
-async function loadAllUsers() {
-  try {
-    const res = await fetch(userApiBase, { headers: authHeader() });
-    if (!res.ok) throw new Error(await res.text());
-    const users = await res.json();
-
-    const container = document.getElementById('userRolesContainer');
-    container.innerHTML = '';
-
-    users.forEach((user) => {
-      const section = document.createElement('div');
-      section.style.border = '1px solid #ccc';
-      section.style.marginBottom = '10px';
-      section.style.padding = '10px';
-
-      // 標題：顯示用戶名稱
-      const header = document.createElement('h3');
-      header.textContent = `👤 ${user.username}`;
-      section.appendChild(header);
-
-      // 顯示現有角色（english排序）
-      const roleText = document.createElement('p');
-      const currentRoles = user.roles?.slice().sort().join(', ') || '無角色';
-      roleText.textContent = `現有角色: ${currentRoles}`;
-      section.appendChild(roleText);
-
-      // 顯示說明文字
-      const hint = document.createElement('p');
-      hint.textContent = '勾選下列選項，以更改用戶角色：';
-      section.appendChild(hint);
-
-      const checkboxArea = document.createElement('div');
-      allRoles.forEach((role) => {
-        const label = document.createElement('label');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.value = role.id;
-        checkbox.checked = user.roles?.includes(role.name) ?? false;
-        checkbox.dataset.userId = user.id;
-
-        label.appendChild(checkbox);
-        label.append(' ' + role.name);
-        checkboxArea.appendChild(label);
-        checkboxArea.appendChild(document.createElement('br'));
-      });
-      section.appendChild(checkboxArea);
-
-      const saveBtn = document.createElement('button');
-      saveBtn.textContent = '保存角色變更';
-      saveBtn.onclick = () => saveUserRoles(user.id, checkboxArea);
-      section.appendChild(saveBtn);
-
-      container.appendChild(section);
-    });
   } catch (err) {
-    console.error('載入用戶清單失敗', err);
-    alert('無法載入用戶清單');
-  }
-}
-
-// 儲存單一使用者角色變更
-async function saveUserRoles(userId, checkboxContainer) {
-  const roleIds = Array.from(
-    checkboxContainer.querySelectorAll("input[type='checkbox']:checked"),
-  ).map((cb) => parseInt(cb.value));
-
-  const updatedUser = { roleIds };
-
-  try {
-    const res = await fetch(`${userApiBase}/${userId}`, {
-      method: 'PUT',
-      headers: authHeader(),
-      body: JSON.stringify(updatedUser),
-    });
-
-    if (!res.ok) throw new Error(await res.text());
-    alert(`用戶 ${userId} 角色更新成功`);
-    console.log(`User ${userId} 更新角色為：`, roleIds);
-    loadAllUsers(); // 全部用戶角色分配
-  } catch (err) {
-    alert(`更新失敗：${err}`);
-    console.error(err);
+    alert(`刪除失敗：${err.message}`);
   }
 }
 
 // ================================
-// 頁面載入時
+// 頁面載入：綁定事件並載入資料
 // ================================
-document.addEventListener('DOMContentLoaded', async () => {
-  loadRules(); // 規則管理
-  await loadRoleList(); // 角色名稱管理 + 更新 allRoles[]
-  await loadAllUsers(); // 全部用戶角色分配（需要 allRoles 先載入）
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!checkAuthOrRedirect()) return;
+
+  document.getElementById('role-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    createRole();
+  });
+  document.getElementById('rule-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    createRule();
+  });
+  onListAction('role-list', { update: updateRole, delete: deleteRole });
+  onListAction('rule-list', { update: updateRule, delete: deleteRule });
+
+  loadRules();
+  reloadRolesAndUsers(); // 用戶總覽需要 allRoles，所以先載角色再載用戶
 });

@@ -1,22 +1,18 @@
-async function login() {
-  const username = document.getElementById('login-username').value;
-  const password = document.getElementById('login-password').value;
+// 登入：成功後把後端發的 JWT 存進 localStorage，之後每個 API 請求都會帶上它。
+// 用 form 的 submit 事件（而不是按鈕 onclick），按 Enter 也能送出，
+// 並用 e.preventDefault() 阻止瀏覽器預設的整頁表單提交。
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const output = document.getElementById('output');
+  const credentials = readFields({ username: 'login-username', password: 'login-password' });
 
-  const res = await fetch('/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
-  });
-
-  if (!res.ok) {
-    const message = await readErrorMessage(res, '登入失敗');
-    document.getElementById('output').textContent = message;
+  try {
+    const data = await apiFetch('/api/auth/login', { method: 'POST', body: credentials });
+    setToken(data.token);
+    alert('登入成功');
+    location.href = '/index.html';
+  } catch (err) {
+    output.textContent = err.message;
     alert('登入失敗');
-    return;
   }
-
-  const data = await res.json();
-  localStorage.setItem('token', data.token);
-  alert('登入成功');
-  window.location.href = '/index.html';
-}
+});

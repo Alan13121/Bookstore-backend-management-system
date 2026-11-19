@@ -13,22 +13,24 @@
 
     <h3>➕ 新增用戶</h3>
     <form id="create-user-form">
-      <input type="text" id="new-username" placeholder="Username" />
-      <input type="text" id="new-password" placeholder="Password" />
+      <input type="text" id="new-username" placeholder="Username" required />
+      <input type="password" id="new-password" placeholder="Password" required />
       <input type="text" id="new-fullName" placeholder="Full Name" />
-      <input type="text" id="new-email" placeholder="Email" />
-      <input type="text" id="new-phone" placeholder="Phone" />
-      <input type="text" id="new-enabled" placeholder="Enabled (true/false)" />
-      <input type="text" id="new-roles" placeholder="Role IDs, 逗號分隔" />
+      <input type="email" id="new-email" placeholder="Email" />
+      <input type="tel" id="new-phone" placeholder="Phone" />
+      <label>
+        Enabled:
+        <select id="new-enabled">
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      </label>
+      <p>角色：</p>
+      <div id="new-roles"></div>
       <button type="submit">新增用戶</button>
     </form>
 
-    <pre id="output"></pre>
-
     <script src="/js/common.js"></script>
     <script src="/js/users.js"></script>
-    <script>
-      checkAuthOrRedirect();
-    </script>
   </body>
 </html>

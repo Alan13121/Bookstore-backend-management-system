@@ -6,12 +6,16 @@
   </head>
   <body>
     <h2>👥 註冊</h2>
-    <input type="text" id="reg-username" placeholder="Username" />
-    <input type="password" id="reg-password" placeholder="Password" />
-    <input type="text" id="reg-fullname" placeholder="Full Name" />
-    <input type="text" id="reg-email" placeholder="Email" />
-    <input type="text" id="reg-phone" placeholder="Phone" />
-    <button onclick="register()">註冊</button>
+    <form id="register-form">
+      <input type="text" id="reg-username" placeholder="Username" required />
+      <input type="password" id="reg-password" placeholder="Password" required />
+      <input type="text" id="reg-fullname" placeholder="Full Name" />
+      <input type="email" id="reg-email" placeholder="Email" />
+      <input type="tel" id="reg-phone" placeholder="Phone" />
+      <button type="submit">註冊</button>
+    </form>
+
+    <p><a href="/index.html">返回首頁</a></p>
     <pre id="output"></pre>
 
     <script src="/js/common.js"></script>
